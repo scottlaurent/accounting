@@ -1,6 +1,6 @@
 {
-    "name": "scottlaurent/ledger",
-    "description": "Simple Laravel Accounting Ledger",
+    "name": "scottlaurent/accounting",
+    "description": "Laravel Accounting Journals for Eloquent Models",
     "license": "MIT",
     "keywords": ["laravel", "accounting"],
     "authors": [

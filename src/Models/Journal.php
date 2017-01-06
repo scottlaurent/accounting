@@ -11,7 +11,9 @@ use Carbon\Carbon;
  * Class Journal
  * @package Scottlaurent\Accounting
  * @property    Money                  $balance
+ * @property    string                 $currency
  * @property    Carbon                 $updated_at
+ * @property    Carbon                 $post_date
  * @property    Carbon                 $created_at
  */
 class Journal extends Model
