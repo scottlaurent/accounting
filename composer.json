@@ -1,0 +1,25 @@
+{
+    "name": "scottlaurent/ledger",
+    "description": "Simple Laravel Accounting Ledger",
+    "license": "MIT",
+    "keywords": ["laravel", "accounting"],
+    "authors": [
+        {
+            "name": "Scott Laurent",
+            "email": "scott@baselineapplications.com"
+        }
+    ],
+    "require": {
+        "moneyphp/money": "^3.0"
+    },
+    "require-dev": {
+        "mockery/mockery": "^0.9.4",
+        "phpunit/phpunit": "~4.8|~5.0",
+        "orchestra/testbench": "~3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Scottlaurent\\Accounting\\": "src/"
+        }
+    }
+}
