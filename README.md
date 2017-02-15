@@ -10,10 +10,12 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 
 ** This DOES NOT replace any type of financial recording system which you may be using (ie if you are tracking things in Stripe for example) --
 
+
 ## Contents
 
 - [Installation](#Installation)
 - [How It Works](#How It Works)
+- [Code Sample](#Code Sample)
 - [Usage Examples](#Usage)
 - [License](#license)
 
@@ -27,6 +29,40 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 
 4) ** most of the time you will want to add the $model->initJournal() into the static::created() method of your model so that a journal is created when you create the model object itself.
 
+
+## Code Sample
+
+```php
+
+    // locate a user (or ANY MODEL that implementes the AccountingJournal trait)
+    $user = User::find(1);
+    
+    // locate a product (optional)
+    $product = Product::find(1)
+    
+    // init a journal for this user (do this only once)
+    $user->initJournal();
+    
+    // credit the user and reference the product
+    $transaction_1 = $user->journal->creditDollars(100);
+    $transaction_1->referencesObject($product);
+    
+    // check our balance (should be 100)
+    $current_balance = $user->journal->getCurrentBalanceInDollars();
+    
+    // debit the user 
+    $transaction_2 = $user->journal->debitDollars(75);
+    
+    // check our balance (should be 25)
+    $current_balance = $user->journal->getCurrentBalanceInDollars();
+    
+    //get the product referenced in the journal (optional)
+    $product_copy = $transaction_1->getReferencedObject()
+    
+```
+
+##### see /tests for more examples.
+
 ## How it works
 
 1) The trait includes functions to a) initialize a new journal for your model object and b) to return that journal.
@@ -36,8 +72,6 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 3) IMPORTANT: The accounting system uses the Money PHP class which deals with indivisible currency.  For example, the indivisible currency of USD is the penny.  So $1 is really Money 100 USD.  This prevents loss of currency by division/rounding errors.
 
 ### Usage Examples
-
-See the tests folder for code examples.
 
 1. Case Scenario A - You want to track API calls for a user and charge them a base ammount per call and you don't cate about double-entry.
 

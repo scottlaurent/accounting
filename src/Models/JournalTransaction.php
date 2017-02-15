@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Ledger
+ *
  * @package Scottlaurent\Accounting
  * @property    int                 $journal_id
  * @property    int                 $debit
  * @property    int                 $credit
+ * @property    string              $currency
+ * @property    string              memo
  * @property    \Carbon\Carbon      $post_date
  * @property    \Carbon\Carbon      $updated_at
  * @property    \Carbon\Carbon      $created_at
@@ -31,10 +34,10 @@ class JournalTransaction extends Model
 	 * @var array
 	 */
 	protected $dates = [
+		'post_date',
 		'deleted_at',
 		'udpated_at'
 	];
-	
 	
 	/**
 	 * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
