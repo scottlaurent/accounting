@@ -10,7 +10,6 @@ use Models\Account;
 use Models\Product;
 
 
-
 /**
  * Class JournalTest
  */
@@ -24,7 +23,7 @@ class JournalTest extends \Orchestra\Testbench\TestCase
 	{
 		
 		// create some sample model types that will have journals
-		$user = User::create($this->fakeUserData());
+		$user = $this->createFakeUser();
 
 		// initialize journals for these models
 		$user->initJournal();
@@ -71,11 +70,11 @@ class JournalTest extends \Orchestra\Testbench\TestCase
 		|--------------------------------------------------------------------------
 		*/
 		
-		$user = User::create($this->fakeUserData());
+		$user = $this->createFakeUser();
 		$user->initJournal();
 		$user_journal = $user->fresh()->journal;
 		
-		$account = Account::create(['name'=>'Account X']);
+		$account = $this->createFakeAccount();
 		$account->initJournal();
 		$account_journal = Account::find(1)->journal;
 		
@@ -163,12 +162,21 @@ class JournalTest extends \Orchestra\Testbench\TestCase
 	/**
 	 * @return array
 	 */
-	protected function fakeUserData() {
-		return [
+	protected function createFakeUser() {
+		return User::create([
 			'name' => $this->faker->name,
 			'email' => $this->faker->email,
 			'password' => $this->faker->password
-		];
+		]);
+	}
+	
+	/**
+	 * @return array
+	 */
+	protected function createFakeAccount() {
+		return Account::create([
+			'name' => $this->faker->company,
+		]);
 	}
 	
 }
