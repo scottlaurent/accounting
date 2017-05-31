@@ -13,9 +13,10 @@
         "moneyphp/money": "^3.0"
     },
     "require-dev": {
-        "mockery/mockery": "^0.9.4",
-        "phpunit/phpunit": "~4.8|~5.0",
-        "orchestra/testbench": "~3.0"
+        "mockery/mockery": "^0.9.5",
+        "orchestra/testbench": "~3.4.0",
+        "orchestra/database": "~3.4.0",
+        "phpunit/phpunit": "^5.2"
     },
     "autoload": {
         "psr-4": {

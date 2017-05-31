@@ -1,11 +1,15 @@
 <?php
 
+use Faker\Factory as Faker;
+
 use Money\Money;
 use Scottlaurent\Accounting\Models\Journal;
 
 use Models\User;
 use Models\Account;
 use Models\Product;
+
+
 
 /**
  * Class JournalTest
@@ -20,8 +24,8 @@ class JournalTest extends \Orchestra\Testbench\TestCase
 	{
 		
 		// create some sample model types that will have journals
-		$user = User::create(['name'=>'User X']);
-		
+		$user = User::create($this->fakeUserData());
+
 		// initialize journals for these models
 		$user->initJournal();
 		
@@ -67,7 +71,7 @@ class JournalTest extends \Orchestra\Testbench\TestCase
 		|--------------------------------------------------------------------------
 		*/
 		
-		$user = User::create(['name'=>'User Y']);
+		$user = User::create($this->fakeUserData());
 		$user->initJournal();
 		$user_journal = $user->fresh()->journal;
 		
@@ -118,10 +122,11 @@ class JournalTest extends \Orchestra\Testbench\TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->loadMigrationsFrom([
-            '--database' => 'testing',
-            '--realpath' => realpath(__DIR__.'/migrations'),
-        ]);
+	    
+        $this->artisan('migrate', ['--database'=>'testbench','--path'=>'migrations']);
+        $this->loadMigrationsFrom(realpath(__DIR__.'/migrations'));
+	    
+        $this->faker = Faker::create();
     }
     
 	/**
@@ -132,8 +137,6 @@ class JournalTest extends \Orchestra\Testbench\TestCase
 	 */
 	protected function getEnvironmentSetUp($app)
 	{
-		$app['config']->set('database.default', 'testing');
-		
 	    // Setup default database to use sqlite :memory:
 	    $app['config']->set('database.default', 'testbench');
 	    $app['config']->set('database.connections.testbench', [
@@ -144,5 +147,28 @@ class JournalTest extends \Orchestra\Testbench\TestCase
 	    
 	    Eloquent::unguard();
 	}
-
+	
+	
+	/**
+	 * @param \Illuminate\Foundation\Application $app
+	 * @return array
+	 */
+	protected function getPackageProviders($app)
+	{
+	    return [
+	         \Orchestra\Database\ConsoleServiceProvider::class,
+	    ];
+	}
+	
+	/**
+	 * @return array
+	 */
+	protected function fakeUserData() {
+		return [
+			'name' => $this->faker->name,
+			'email' => $this->faker->email,
+			'password' => $this->faker->password
+		];
+	}
+	
 }
