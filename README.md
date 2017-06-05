@@ -79,7 +79,7 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 
 ### <a name="usage-examples"></a>Usage Examples
 
-1. SCENARIO A - VERY SIMPLE CASE - You are providing an API Service. Each API hit from a user costs 5 cents. You don't cate about double-entry accounting.
+1. SCENARIO A - VERY SIMPLE CASE - You are providing an API Service. Each API hit from a user costs 5 cents. You don't care about double-entry accounting.
 
     a. Add the model trait to your user class.
     
