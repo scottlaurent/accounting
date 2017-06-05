@@ -33,6 +33,14 @@ class Journal extends Model
     }
 	
 	/**
+	 * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+	 */
+	public function ledger()
+    {
+        return $this->belongsTo(Ledger::class);
+    }
+    
+	/**
 	 * @var array
 	 */
 	protected $dates = [
@@ -47,6 +55,17 @@ class Journal extends Model
 	public function setCurrency($currency)
 	{
 		$this->currency = $currency;
+	}
+	
+	
+	/**
+	 * @param Ledger $ledger
+	 * @return Journal
+	 */
+	public function assignToLedger(Ledger $ledger)
+	{
+		$ledger->journals()->save($this);
+		return $this;
 	}
 	
 	
@@ -105,6 +124,17 @@ class Journal extends Model
 		$balance = $this->transactions()->where('post_date', '<=', $date)->sum('debit') ?: 0;
 		return new Money($balance, new Currency('USD'));
 
+	}
+	
+	/**
+	 * @param Model $object
+	 */
+	public function transactionsReferencingObjectQuery($object)
+	{
+		return $this
+			->transactions()
+			->where('ref_class',get_class($object))
+			->where('ref_class_id',$object->id);
 	}
 	
 	/**
@@ -223,7 +253,7 @@ class Journal extends Model
 	 */
 	public function creditDollars($value,$memo=null,$post_date=null)
 	{
-		$value = $value * 100;
+		$value = (int) ($value*100);
 		return $this->credit($value,$memo,$post_date);
 	}
 	
@@ -236,7 +266,7 @@ class Journal extends Model
 	 */
 	public function debitDollars($value,$memo=null,$post_date=null)
 	{
-		$value = $value * 100;
+		$value = (int) ($value*100);
 		return $this->debit($value,$memo,$post_date);
 	}
 	

@@ -1,6 +1,7 @@
 <?php
 
-use Faker\Factory as Faker;
+// ensure we load our base file (PHPStorm Bug when using remote interpreter )
+require_once ('BaseTest.php');
 
 use Money\Money;
 use Scottlaurent\Accounting\Models\Journal;
@@ -13,7 +14,7 @@ use Models\Product;
 /**
  * Class JournalTest
  */
-class JournalTest extends \Orchestra\Testbench\TestCase
+class JournalTest extends BaseTest
 {
 	
 	/**
@@ -57,7 +58,6 @@ class JournalTest extends \Orchestra\Testbench\TestCase
 		
 	}
 	
-	
 	/**
 	 *
 	 */
@@ -78,8 +78,8 @@ class JournalTest extends \Orchestra\Testbench\TestCase
 		$account->initJournal();
 		$account_journal = Account::find(1)->journal;
 		
-		$product = Product::create(['name'=>'Product 1','price'=>mt_rand(10000,20000) / 100]);
-		$qty_products = mt_rand(2,5);
+		$product = Product::create(['name'=>'Product 1','price'=> mt_rand(1,99999)]);
+		$qty_products = mt_rand(25000,100000);
 		
 		// credit the account journal for some products that have been purchased.
         $a_transaction = $account_journal->creditDollars($product->price * $qty_products);
@@ -111,72 +111,8 @@ class JournalTest extends \Orchestra\Testbench\TestCase
 		
 		// and also that the referenced product can be retrieved from the transaction
 		$this->assertInstanceOf($u_transaction->ref_class,$u_transaction->getReferencedObject());
+		
 		$this->assertEquals($u_transaction->getReferencedObject()->fresh(),$product->fresh());
-	}
-	
-	
-	/**
-     * Setup the test environment.
-     */
-    public function setUp()
-    {
-        parent::setUp();
-	    
-        $this->artisan('migrate', ['--database'=>'testbench','--path'=>'migrations']);
-        $this->loadMigrationsFrom(realpath(__DIR__.'/migrations'));
-	    
-        $this->faker = Faker::create();
-    }
-    
-	/**
-	 * Define environment setup.
-	 *
-	 * @param  \Illuminate\Foundation\Application  $app
-	 * @return void
-	 */
-	protected function getEnvironmentSetUp($app)
-	{
-	    // Setup default database to use sqlite :memory:
-	    $app['config']->set('database.default', 'testbench');
-	    $app['config']->set('database.connections.testbench', [
-	        'driver'   => 'sqlite',
-	        'database' => ':memory:',
-	        'prefix'   => '',
-	    ]);
-	    
-	    Eloquent::unguard();
-	}
-	
-	
-	/**
-	 * @param \Illuminate\Foundation\Application $app
-	 * @return array
-	 */
-	protected function getPackageProviders($app)
-	{
-	    return [
-	         \Orchestra\Database\ConsoleServiceProvider::class,
-	    ];
-	}
-	
-	/**
-	 * @return array
-	 */
-	protected function createFakeUser() {
-		return User::create([
-			'name' => $this->faker->name,
-			'email' => $this->faker->email,
-			'password' => $this->faker->password
-		]);
-	}
-	
-	/**
-	 * @return array
-	 */
-	protected function createFakeAccount() {
-		return Account::create([
-			'name' => $this->faker->company,
-		]);
 	}
 	
 }

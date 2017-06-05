@@ -22,6 +22,7 @@ class CreateAccountingJournalsTable extends Migration
     {
         Schema::create('accounting_journals', function (Blueprint $table) {
             $table->increments('id');
+            $table->unsignedInteger('ledger_id')->nullable();
             $table->bigInteger('balance');
             $table->char('currency',5);
 	        $table->char('morphed_type',32);

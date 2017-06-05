@@ -69,6 +69,7 @@ class JournalTransaction extends Model
 		return $this;
 	}
 	
+	
 	/**
 	 *
 	 */
