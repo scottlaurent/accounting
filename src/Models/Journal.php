@@ -45,7 +45,7 @@ class Journal extends Model
 	 */
 	protected $dates = [
 		'deleted_at',
-		'udpated_at'
+		'updated_at'
 	];
 	
 	
