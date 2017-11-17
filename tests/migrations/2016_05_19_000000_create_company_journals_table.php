@@ -28,6 +28,6 @@ class CreateCompanyJournalsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('company_journals');
     }
 }
