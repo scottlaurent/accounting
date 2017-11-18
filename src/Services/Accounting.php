@@ -2,6 +2,7 @@
 
 namespace Scottlaurent\Accounting\Services;
 
+use Carbon\Carbon;
 use Scottlaurent\Accounting\Models\Journal;
 use Money\Money;
 use Money\Currency;
@@ -31,18 +32,19 @@ class Accounting
     {
         return new self;
     }
-	
-	/**
-	 * @param Journal $journal
-	 * @param string $method
-	 * @param Money $money
-	 * @param string|null $memo
-	 * @param null $referenced_object
-	 * @throws InvalidJournalEntryValue
-	 * @throws InvalidJournalMethod
-	 * @internal param int $value
-	 */
-	function addTransaction(Journal $journal, string $method, Money $money, string $memo = null, $referenced_object = null) {
+
+    /**
+     * @param Journal $journal
+     * @param string $method
+     * @param Money $money
+     * @param string|null $memo
+     * @param null $referenced_object
+     * @param Carbon|null $postdate
+     * @throws InvalidJournalEntryValue
+     * @throws InvalidJournalMethod
+     * @internal param int $value
+     */
+	function addTransaction(Journal $journal, string $method, Money $money, string $memo = null, $referenced_object = null, Carbon $postdate = null) {
     	
     	if (!in_array($method,['credit','debit'])) {
     		throw new InvalidJournalMethod;
@@ -57,22 +59,24 @@ class Accounting
 		    'method' => $method,
 		    'money' => $money,
 		    'memo' => $memo,
-		    'referenced_object' => $referenced_object
+		    'referenced_object' => $referenced_object,
+            'postdate' => $postdate
 	    ];
     	
     }
-	
-	/**
-	 * @param Journal $journal
-	 * @param string $method
-	 * @param $value
-	 * @param string|null $memo
-	 * @param null $referenced_object
-	 */
-	function addDollarTransaction(Journal $journal, string $method, $value, string $memo = null, $referenced_object = null) {
+
+    /**
+     * @param Journal $journal
+     * @param string $method
+     * @param $value
+     * @param string|null $memo
+     * @param null $referenced_object
+     * @param Carbon|null $postdate
+     */
+	function addDollarTransaction(Journal $journal, string $method, $value, string $memo = null, $referenced_object = null, Carbon $postdate = null) {
 		$value = (int) ($value*100);
 		$money = new Money($value, new Currency('USD'));
-		$this->addTransaction($journal,$method,$money, $memo, $referenced_object);
+		$this->addTransaction($journal,$method,$money, $memo, $referenced_object, $postdate);
     }
 	
 	/**
@@ -90,15 +94,19 @@ class Accounting
 		$this->verifyTransactionCreditsEqualDebits();
 
 		try {
-			
+
+		    $transaction_group = \Ramsey\Uuid\Uuid::uuid4()->toString();
+
 			foreach ($this->transctions_pending as $transction_pending) {
-				$transaction = $transction_pending['journal']->{$transction_pending['method']}($transction_pending['money'],$transction_pending['memo']);
+				$transaction = $transction_pending['journal']->{$transction_pending['method']}($transction_pending['money'],$transction_pending['memo'],$transction_pending['postdate'], $transaction_group);
 				if ($object = $transction_pending['referenced_object']) {
 					$transaction->referencesObject($object);
 				}
 			}
 			
 			DB::commit();
+
+			return $transaction_group;
 			
 		} catch (\Exception $e) {
 			

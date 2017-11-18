@@ -10,7 +10,8 @@
         }
     ],
     "require": {
-        "moneyphp/money": "^3.0"
+        "moneyphp/money": "^3.0",
+        "ramsey/uuid": "^3.7"
     },
     "require-dev": {
         "mockery/mockery": "^0.9.5",

@@ -21,12 +21,14 @@ class CreateAccountingJournalTransactionsTable extends Migration
     public function up()
     {
         Schema::create('accounting_journal_transactions', function (Blueprint $table) {
-            $table->increments('id');
+            $table->char('id',36)->unique();
+            $table->char('transaction_group',36)->nullable();
             $table->integer('journal_id');
             $table->bigInteger('debit')->nullable();
             $table->bigInteger('credit')->nullable();
             $table->char('currency',5);
 	        $table->text('memo')->nullable();
+	        $table->text('tags')->nullable();
 	        $table->char('ref_class',32)->nullable();
 	        $table->integer('ref_class_id')->nullable();
             $table->timestamps();

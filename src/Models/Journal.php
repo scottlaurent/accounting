@@ -47,7 +47,18 @@ class Journal extends Model
 		'deleted_at',
 		'updated_at'
 	];
-	
+
+	/**
+	 * @internal Journal $journal
+	 */
+	protected static function boot()
+	{
+		static::created(function (Journal $journal) {
+			$journal->resetCurrentBalances();
+		});
+
+		parent::boot();
+	}
 	
 	/**
 	 * @param string $currency
@@ -76,16 +87,6 @@ class Journal extends Model
     {
         return $this->hasMany(JournalTransaction::class);
     }
-
-	/**
-	 * @internal Journal $journal
-	 */
-	protected static function boot()
-	{
-		static::created(function (Journal $journal) {
-			$journal->resetCurrentBalances();
-		});
-	}
 	
 	/**
 	 *
@@ -201,12 +202,12 @@ class Journal extends Model
 	 * @param null $post_date
 	 * @return JournalTransaction
 	 */
-	public function credit($value,$memo=null,$post_date=null)
+	public function credit($value,$memo=null,$post_date=null, $transaction_group = null)
 	{
 		$value = is_a($value,Money::class)
 			? $value
 			: new Money($value, new Currency($this->currency));
-		return $this->post($value,null,$memo,$post_date);
+		return $this->post($value,null,$memo,$post_date, $transaction_group);
 	}
 	
 	/**
@@ -215,12 +216,12 @@ class Journal extends Model
 	 * @param null $post_date
 	 * @return JournalTransaction
 	 */
-	public function debit($value,$memo=null,$post_date=null)
+	public function debit($value,$memo=null,$post_date=null, $transaction_group=null)
 	{
 		$value = is_a($value,Money::class)
 			? $value
 			: new Money($value, new Currency($this->currency));
-		return $this->post(null,$value,$memo,$post_date);
+		return $this->post(null,$value,$memo,$post_date, $transaction_group);
 	}
 	
 	/**
@@ -230,7 +231,8 @@ class Journal extends Model
 	 * @param Carbon $post_date
 	 * @return JournalTransaction
 	 */
-	private function post(Money $credit = null, Money $debit=null, $memo=null, $post_date = null) {
+	private function post(Money $credit = null, Money $debit=null, $memo=null, $post_date = null, $transaction_group) {
+
 		$transaction = new JournalTransaction;
 		$transaction->credit = $credit ? $credit->getAmount() : null;
 		$transaction->debit = $debit ? $debit->getAmount() : null;
@@ -240,6 +242,7 @@ class Journal extends Model
 		$transaction->memo = $memo;
 		$transaction->currency = $currency_code;
 		$transaction->post_date = $post_date ?: Carbon::now();
+		$transaction->transaction_group = $transaction_group;
 		$this->transactions()->save($transaction);
 		return $transaction;
 	}

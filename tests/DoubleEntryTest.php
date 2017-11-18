@@ -4,7 +4,7 @@
 require_once ('BaseTest.php');
 
 use Scottlaurent\Accounting\Services\Accounting as AccountingService;
-
+use Scottlaurent\Accounting\Models\JournalTransaction;
 
 /**
  * Class LedgerTest
@@ -58,6 +58,22 @@ class DoubleEntryTest extends BaseTest
 		
 		$this->assertEquals($this->company_cash_journal->getCurrentBalanceInDollars(),(-1) * $this->company_ar_journal->getCurrentBalanceInDollars());
 		
+	}
+
+    /**
+	 *
+	 */
+	public function testTransactionGroupsMatch() {
+
+		$transaction_group = AccountingService::newDoubleEntryTransactionGroup();
+		$transaction_group->addDollarTransaction($this->company_cash_journal,'debit',100);
+		$transaction_group->addDollarTransaction($this->company_ar_journal,'credit',100);
+		$transaction_group->addDollarTransaction($this->company_cash_journal,'debit',75);
+		$transaction_group->addDollarTransaction($this->company_ar_journal,'credit',75);
+		$transaction_group_uuid = $transaction_group->commit();
+
+		$this->assertEquals(JournalTransaction::where('transaction_group',$transaction_group_uuid)->count(),4);
+
 	}
 	
 	/**
