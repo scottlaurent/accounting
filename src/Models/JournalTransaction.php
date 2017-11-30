@@ -61,6 +61,10 @@ class JournalTransaction extends Model
             $transaction->journal->resetCurrentBalances();
         });
 
+        static::deleted(function ($transaction) {
+            $transaction->journal->resetCurrentBalances();
+        });
+
         parent::boot();
     }
 
