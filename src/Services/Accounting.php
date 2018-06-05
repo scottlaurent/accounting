@@ -96,7 +96,9 @@ class Accounting
 		try {
 
 		    $transaction_group = \Ramsey\Uuid\Uuid::uuid4()->toString();
-
+			
+			DB::beginTransaction();
+			
 			foreach ($this->transctions_pending as $transction_pending) {
 				$transaction = $transction_pending['journal']->{$transction_pending['method']}($transction_pending['money'],$transction_pending['memo'],$transction_pending['postdate'], $transaction_group);
 				if ($object = $transction_pending['referenced_object']) {
