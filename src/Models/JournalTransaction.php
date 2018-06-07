@@ -3,6 +3,7 @@
 namespace Scottlaurent\Accounting\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Class Ledger
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class JournalTransaction extends Model
 {
-
+    use SoftDeletes;
     /**
      * @var string
      */
@@ -38,7 +39,7 @@ class JournalTransaction extends Model
     /**
      * @var array
      */
-    protected $guarded=['id'];
+    protected $guarded = ['id'];
 
     /**
      * @var array
