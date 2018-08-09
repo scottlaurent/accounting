@@ -43,6 +43,6 @@ class CreateAccountingJournalTransactionsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('accounting_journals');
+        Schema::dropIfExists('accounting_journal_transactions');
     }
 }
