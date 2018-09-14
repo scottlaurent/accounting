@@ -53,6 +53,7 @@ class JournalTransaction extends Model
      */
     protected static function boot()
     {
+        parent::boot();
         static::creating(function ($transaction) {
             $transaction->id = \Ramsey\Uuid\Uuid::uuid4()->toString();
         });
