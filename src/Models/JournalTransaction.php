@@ -26,9 +26,11 @@ class JournalTransaction extends Model
     protected $table = 'accounting_journal_transactions';
 
     /**
-     * @var string
+     * Currency.
+     *
+     * @var string $currency
      */
-    protected $currency = 'USD';
+    protected $currency;
 
     /**
      * @var bool
@@ -47,6 +49,18 @@ class JournalTransaction extends Model
         'post_date' => 'datetime',
         'tags' => 'array',
     ];
+
+    /**
+     * Ledger constructor.
+     *
+     * @param array $attributes
+     */
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->currency = config('accounting.currency', 'USD');
+    }
 
     /**
      *

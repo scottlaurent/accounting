@@ -18,15 +18,32 @@ use Carbon\Carbon;
  */
 class Ledger extends Model
 {
-	
-	/**
-	 * @var string
-	 */
+
+    /**
+     * @var string
+     */
 	protected $table = 'accounting_ledgers';
-	
-	public $currency = 'USD';
-	
-	/**
+
+    /**
+     * Currency.
+     *
+     * @var string $currency
+     */
+	public $currency;
+
+    /**
+     * Ledger constructor.
+     *
+     * @param array $attributes
+     */
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->currency = config('accounting.base_currency', 'USD');
+    }
+
+    /**
 	 *
 	 */
 	public function journals()
