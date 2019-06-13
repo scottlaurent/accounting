@@ -22,7 +22,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Scottlaurent\\Accounting\\AccountingServiceProvider"
+                "Scottlaurent\\Accounting\\Providers\\AccountingServiceProvider"
             ]
         }
     },

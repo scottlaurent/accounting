@@ -1,6 +1,6 @@
 <?php
 
-namespace Scottlaurent\Accounting;
+namespace Scottlaurent\Accounting\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
