@@ -19,16 +19,16 @@ use DB;
  */
 class Accounting
 {
-	
-	/**
-	 * @var array
-	 */
-	protected $transctions_pending = [];
-	
-	/**
-	 * @return Accounting
-	 */
-	public static function newDoubleEntryTransactionGroup()
+
+    /**
+     * @var array
+     */
+    protected $transactions_pending = [];
+
+    /**
+     * @return Accounting
+     */
+    public static function newDoubleEntryTransactionGroup()
     {
         return new self;
     }
@@ -44,25 +44,26 @@ class Accounting
      * @throws InvalidJournalMethod
      * @internal param int $value
      */
-	function addTransaction(Journal $journal, string $method, Money $money, string $memo = null, $referenced_object = null, Carbon $postdate = null) {
-    	
-    	if (!in_array($method,['credit','debit'])) {
-    		throw new InvalidJournalMethod;
-	    }
-	    
-    	if ($money->getAmount() <= 0) {
-    		throw new InvalidJournalEntryValue();
-	    }
-	    
-    	$this->transctions_pending[] = [
-    	    'journal' => $journal,
-		    'method' => $method,
-		    'money' => $money,
-		    'memo' => $memo,
-		    'referenced_object' => $referenced_object,
+    function addTransaction(Journal $journal, string $method, Money $money, string $memo = null, $referenced_object = null, Carbon $postdate = null)
+    {
+
+        if (!in_array($method, ['credit', 'debit'])) {
+            throw new InvalidJournalMethod;
+        }
+
+        if ($money->getAmount() <= 0) {
+            throw new InvalidJournalEntryValue();
+        }
+
+        $this->transactions_pending[] = [
+            'journal' => $journal,
+            'method' => $method,
+            'money' => $money,
+            'memo' => $memo,
+            'referenced_object' => $referenced_object,
             'postdate' => $postdate
-	    ];
-    	
+        ];
+
     }
 
     /**
@@ -72,73 +73,77 @@ class Accounting
      * @param string|null $memo
      * @param null $referenced_object
      * @param Carbon|null $postdate
+     * @throws InvalidJournalEntryValue
+     * @throws InvalidJournalMethod
      */
-	function addDollarTransaction(Journal $journal, string $method, $value, string $memo = null, $referenced_object = null, Carbon $postdate = null) {
-		$value = (int) ($value*100);
-		$money = new Money($value, new Currency('USD'));
-		$this->addTransaction($journal,$method,$money, $memo, $referenced_object, $postdate);
+    function addDollarTransaction(Journal $journal, string $method, $value, string $memo = null, $referenced_object = null, Carbon $postdate = null)
+    {
+        $value = (int)($value * 100);
+        $money = new Money($value, new Currency('USD'));
+        $this->addTransaction($journal, $method, $money, $memo, $referenced_object, $postdate);
     }
-	
-	/**
-	 * @return array
-	 */
-	function getTransactionsPending() {
-    	return $this->transctions_pending;
+
+    /**
+     * @return array
+     */
+    function getTransactionsPending()
+    {
+        return $this->transactions_pending;
     }
-	
-	/**
-	 *
-	 */
-	public function commit()
-	{
-		$this->verifyTransactionCreditsEqualDebits();
 
-		try {
+    /**
+     *
+     */
+    public function commit()
+    {
+        $this->verifyTransactionCreditsEqualDebits();
 
-		    $transaction_group = \Ramsey\Uuid\Uuid::uuid4()->toString();
-			
-			DB::beginTransaction();
-			
-			foreach ($this->transctions_pending as $transction_pending) {
-				$transaction = $transction_pending['journal']->{$transction_pending['method']}($transction_pending['money'],$transction_pending['memo'],$transction_pending['postdate'], $transaction_group);
-				if ($object = $transction_pending['referenced_object']) {
-					$transaction->referencesObject($object);
-				}
-			}
-			
-			DB::commit();
+        try {
 
-			return $transaction_group;
-			
-		} catch (\Exception $e) {
-			
-			DB::rollBack();
-			
-			throw new TransactionCouldNotBeProcessed('Rolling Back Database. Message: ' . $e->getMessage());
-		}
-	}
-	
-	
-	/**
-	 *
-	 */
-	private function verifyTransactionCreditsEqualDebits()
-	{
-		$credits = 0;
-		$debits = 0;
-		
-		foreach ($this->transctions_pending as $transction_pending) {
-			if ($transction_pending['method']=='credit') {
-				$credits += $transction_pending['money']->getAmount();
-			} else {
-				$debits += $transction_pending['money']->getAmount();
-			}
-		}
-		
-		if ($credits !== $debits) {
-			throw new DebitsAndCreditsDoNotEqual('In this transaction, credits == ' . $credits  . ' and debits == ' . $debits);
-		}
-	}
-	
-	
+            $transaction_group = \Ramsey\Uuid\Uuid::uuid4()->toString();
+
+            DB::beginTransaction();
+
+            foreach ($this->transactions_pending as $transaction_pending) {
+                $transaction = $transaction_pending['journal']->{$transaction_pending['method']}($transaction_pending['money'], $transaction_pending['memo'], $transaction_pending['postdate'], $transaction_group);
+                if ($object = $transaction_pending['referenced_object']) {
+                    $transaction->referencesObject($object);
+                }
+            }
+
+            DB::commit();
+
+            return $transaction_group;
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            throw new TransactionCouldNotBeProcessed('Rolling Back Database. Message: ' . $e->getMessage());
+        }
+    }
+
+
+    /**
+     *
+     */
+    private function verifyTransactionCreditsEqualDebits()
+    {
+        $credits = 0;
+        $debits = 0;
+
+        foreach ($this->transactions_pending as $transaction_pending) {
+            if ($transaction_pending['method'] == 'credit') {
+                $credits += $transaction_pending['money']->getAmount();
+            } else {
+                $debits += $transaction_pending['money']->getAmount();
+            }
+        }
+
+        if ($credits !== $debits) {
+            throw new DebitsAndCreditsDoNotEqual('In this transaction, credits == ' . $credits . ' and debits == ' . $debits);
+        }
+    }
+
+
 }
