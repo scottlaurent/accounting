@@ -51,18 +51,6 @@ class JournalTransaction extends Model
     ];
 
     /**
-     * Ledger constructor.
-     *
-     * @param array $attributes
-     */
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-
-        $this->currency = config('accounting.currency', 'USD');
-    }
-
-    /**
      *
      */
     protected static function boot()

@@ -32,18 +32,6 @@ class Ledger extends Model
 	public $currency;
 
     /**
-     * Ledger constructor.
-     *
-     * @param array $attributes
-     */
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-
-        $this->currency = config('accounting.base_currency', 'USD');
-    }
-
-    /**
 	 *
 	 */
 	public function journals()
