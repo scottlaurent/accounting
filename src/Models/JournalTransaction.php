@@ -5,10 +5,10 @@ namespace Scottlaurent\Accounting\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class Ledger
+ * Class JournalTransaction
  *
  * @package Scottlaurent\Accounting
- * @property    int $journal_id
+ * @property    string $journal_id
  * @property    int $debit
  * @property    int $credit
  * @property    string $currency
@@ -51,7 +51,7 @@ class JournalTransaction extends Model
     ];
 
     /**
-     *
+     * Boot.
      */
     protected static function boot()
     {
@@ -60,9 +60,9 @@ class JournalTransaction extends Model
             $transaction->id = \Ramsey\Uuid\Uuid::uuid4()->toString();
         });
 
-        static::saved(function ($transaction) {
-            $transaction->journal->resetCurrentBalances();
-        });
+//        static::saved(function ($transaction) {
+//            $transaction->journal->resetCurrentBalances();
+//        });
 
         static::deleted(function ($transaction) {
             $transaction->journal->resetCurrentBalances();
@@ -72,40 +72,44 @@ class JournalTransaction extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * Journal relation.
      */
     public function journal()
     {
         return $this->belongsTo(Journal::class);
     }
 
-
     /**
+     * Set reference object.
+     *
      * @param Model $object
      * @return JournalTransaction
      */
     public function referencesObject($object)
     {
-        $this->ref_class = get_class($object);
+        $this->ref_class    = get_class($object);
         $this->ref_class_id = $object->id;
         $this->save();
         return $this;
     }
 
-
     /**
+     * Get reference object.
      *
+     * @return \Illuminate\Database\Eloquent\Collection|Model|Model[]|null
      */
     public function getReferencedObject()
     {
-        if ($classname = $this->ref_class) {
-            $_class = new $this->ref_class;
-            return $_class->find($this->ref_class_id);
-        }
-        return false;
+        /**
+         * @var Model $_class
+         */
+        $_class = new $this->ref_class;
+        return $_class->find($this->ref_class_id);
     }
 
     /**
+     * Set currency.
+     *
      * @param string $currency
      */
     public function setCurrency($currency)
