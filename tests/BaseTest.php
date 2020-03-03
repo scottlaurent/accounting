@@ -13,7 +13,7 @@ use \Scottlaurent\Accounting\Providers\AccountingServiceProvider;
  */
 abstract class BaseTest extends \Orchestra\Testbench\TestCase
 {
-	
+	protected $currency;
 	/**
      * Setup the test environment.
      */
@@ -21,6 +21,7 @@ abstract class BaseTest extends \Orchestra\Testbench\TestCase
     {
 	    
         parent::setUp();
+        $this->currency = 'USD';
         
         $this->requireFilesIn(__DIR__.'/Models');
 	    

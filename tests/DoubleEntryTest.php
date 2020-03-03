@@ -88,12 +88,12 @@ class DoubleEntryTest extends BaseTest
 		$transaction_group->addDollarTransaction($this->company_income_journal,'credit',$dollar_value);
 		$transaction_group->commit();
 		
-		$this->assertEquals($this->company_assets_ledger->getCurrentBalanceInDollars('USD'),((int) ($dollar_value*100))/100);
-		$this->assertEquals($this->company_income_ledger->getCurrentBalanceInDollars('USD'),((int) ($dollar_value*100))/100);
+		$this->assertEquals($this->company_assets_ledger->getCurrentBalanceInDollars($this->currency),((int) ($dollar_value*100))/100);
+		$this->assertEquals($this->company_income_ledger->getCurrentBalanceInDollars($this->currency),((int) ($dollar_value*100))/100);
 		
 		$this->assertEquals(
-			$this->company_assets_ledger->getCurrentBalanceInDollars('USD'),
-			$this->company_income_ledger->getCurrentBalanceInDollars('USD')
+			$this->company_assets_ledger->getCurrentBalanceInDollars($this->currency),
+			$this->company_income_ledger->getCurrentBalanceInDollars($this->currency)
 		);
 	}
 	
@@ -117,8 +117,8 @@ class DoubleEntryTest extends BaseTest
 		}
 		
 		$this->assertEquals(
-			$this->company_assets_ledger->getCurrentBalanceInDollars('USD'),
-			$this->company_income_ledger->getCurrentBalanceInDollars('USD')
+			$this->company_assets_ledger->getCurrentBalanceInDollars('$this->currency'),
+			$this->company_income_ledger->getCurrentBalanceInDollars('$this->currency')
 		);
 	}
 }
