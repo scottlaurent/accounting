@@ -11,7 +11,6 @@ use Carbon\Carbon;
  * Class Journal
  * @package Scottlaurent\Accounting
  * @property    Money                  $balance
- * @property    string                 $currency
  * @property    Carbon                 $updated_at
  * @property    Carbon                 $post_date
  * @property    Carbon                 $created_at
@@ -23,13 +22,6 @@ class Ledger extends Model
      * @var string
      */
 	protected $table = 'accounting_ledgers';
-
-    /**
-     * Currency.
-     *
-     * @var string $currency
-     */
-	public $currency;
 
     /**
 	 *
@@ -46,11 +38,12 @@ class Ledger extends Model
     {
         return $this->hasManyThrough(JournalTransaction::class, Journal::class);
     }
-	
-	/**
-	 *
-	 */
-	public function getCurrentBalance()
+
+    /**
+     * @param $currency
+     * @return Money
+     */
+	public function getCurrentBalance($currency)
 	{
 		if ($this->type == 'asset' || $this->type == 'expense') {
 			$balance = $this->journal_transactions->sum('debit') - $this->journal_transactions->sum('credit');
@@ -58,15 +51,16 @@ class Ledger extends Model
 			$balance = $this->journal_transactions->sum('credit') - $this->journal_transactions->sum('debit');
 		}
 		
-		return new Money($balance, new Currency($this->currency));
+		return new Money($balance, new Currency($currency));
 	}
-	
-		/**
-	 *
-	 */
-	public function getCurrentBalanceInDollars()
+
+    /**
+     * @param $currency
+     * @return float|int
+     */
+	public function getCurrentBalanceInDollars($currency)
 	{
-		return $this->getCurrentBalance()->getAmount() / 100;
+		return $this->getCurrentBalance($currency)->getAmount() / 100;
 	}
 	
 	
