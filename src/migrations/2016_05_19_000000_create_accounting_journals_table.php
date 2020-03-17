@@ -21,12 +21,12 @@ class CreateAccountingJournalsTable extends Migration
     public function up()
     {
         Schema::create('accounting_journals', function (Blueprint $table) {
-            $table->increments('id');
-            $table->unsignedInteger('ledger_id')->nullable();
+            $table->uuid('id')->primary();
+            $table->uuid('ledger_id')->nullable();
             $table->bigInteger('balance');
             $table->string('currency',5);
 	        $table->string('morphed_type',32);
-	        $table->integer('morphed_id');
+	        $table->uuid('morphed_id');
             $table->timestamps();
         });
     }
