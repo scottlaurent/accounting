@@ -18,15 +18,20 @@ use Carbon\Carbon;
  */
 class Ledger extends Model
 {
-	
-	/**
-	 * @var string
-	 */
+
+    /**
+     * @var string
+     */
 	protected $table = 'accounting_ledgers';
-	
-	public $currency = 'USD';
-	
-	/**
+
+    /**
+     * Currency.
+     *
+     * @var string $currency
+     */
+	public $currency;
+
+    /**
 	 *
 	 */
 	public function journals()
@@ -37,7 +42,7 @@ class Ledger extends Model
 	/**
      * Get all of the posts for the country.
      */
-    public function journal_transctions()
+    public function journal_transactions()
     {
         return $this->hasManyThrough(JournalTransaction::class, Journal::class);
     }
@@ -48,9 +53,9 @@ class Ledger extends Model
 	public function getCurrentBalance()
 	{
 		if ($this->type == 'asset' || $this->type == 'expense') {
-			$balance = $this->journal_transctions->sum('debit') - $this->journal_transctions->sum('credit');
+			$balance = $this->journal_transactions->sum('debit') - $this->journal_transactions->sum('credit');
 		} else {
-			$balance = $this->journal_transctions->sum('credit') - $this->journal_transctions->sum('debit');
+			$balance = $this->journal_transactions->sum('credit') - $this->journal_transactions->sum('debit');
 		}
 		
 		return new Money($balance, new Currency($this->currency));

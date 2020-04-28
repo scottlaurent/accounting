@@ -19,6 +19,13 @@
         "orchestra/database": "~3.4.0",
         "phpunit/phpunit": "^5.2"
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Scottlaurent\\Accounting\\Providers\\AccountingServiceProvider"
+            ]
+        }
+    },
     "autoload": {
         "psr-4": {
             "Scottlaurent\\Accounting\\": "src/"

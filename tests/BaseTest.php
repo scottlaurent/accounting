@@ -6,6 +6,7 @@ use Models\User;
 use Models\Account;
 use Models\CompanyJournal;
 use Scottlaurent\Accounting\Models\Ledger;
+use \Scottlaurent\Accounting\Providers\AccountingServiceProvider;
 
 /**
  * Class BaseTest
@@ -29,8 +30,8 @@ abstract class BaseTest extends \Orchestra\Testbench\TestCase
         $this->faker = Faker::create();
         $this->setUpCompanyLedgersAndJournals();
     }
-	
-	
+
+
 	/**
 	 * When using PHP Storm,
 	 * @param null $directory
@@ -75,7 +76,8 @@ abstract class BaseTest extends \Orchestra\Testbench\TestCase
 	protected function getPackageProviders($app)
 	{
 	    return [
-	         \Orchestra\Database\ConsoleServiceProvider::class,
+            \Orchestra\Database\ConsoleServiceProvider::class,
+            AccountingServiceProvider::class,
 	    ];
 	}
 	
