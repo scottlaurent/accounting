@@ -32,9 +32,9 @@ class LedgerTest extends BaseTest
 		$this->assertEquals($number_of_users * 100, (-1) * $this->company_ar_journal->getCurrentBalanceInDollars());
 		
 		// This is testing that the value on the LEFT side of the books (ASSETS) is the same as the RIGHT side (L + OE + nominals)
-		$this->assertEquals($number_of_users * 100, $this->company_assets_ledger->getCurrentBalanceInDollars());
-		$this->assertEquals($number_of_users * 100, $this->company_income_ledger->getCurrentBalanceInDollars());
-		$this->assertEquals($this->company_assets_ledger->getCurrentBalanceInDollars(),$this->company_income_ledger->getCurrentBalanceInDollars());
+		$this->assertEquals($number_of_users * 100, $this->company_assets_ledger->getCurrentBalanceInDollars($this->currency));
+		$this->assertEquals($number_of_users * 100, $this->company_income_ledger->getCurrentBalanceInDollars($this->currency));
+		$this->assertEquals($this->company_assets_ledger->getCurrentBalanceInDollars($this->currency),$this->company_income_ledger->getCurrentBalanceInDollars($this->currency));
 		
 		// At this point we have no cash on hand
 		$this->assertEquals($this->company_cash_journal->getCurrentBalanceInDollars(),0);
@@ -81,7 +81,7 @@ class LedgerTest extends BaseTest
 		);
 		
 		// still make sure our ledger balances match
-		$this->assertEquals($this->company_assets_ledger->getCurrentBalanceInDollars(),$this->company_income_ledger->getCurrentBalanceInDollars());
+		$this->assertEquals($this->company_assets_ledger->getCurrentBalanceInDollars($this->currency),$this->company_income_ledger->getCurrentBalanceInDollars($this->currency));
 		
 	}
 	
