@@ -11,7 +11,7 @@
     ],
     "require": {
         "moneyphp/money": "^3.0",
-        "ramsey/uuid": "^3.7"
+        "ramsey/uuid": "^4.0"
     },
     "extra": {
         "laravel": {
