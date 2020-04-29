@@ -1,35 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Scottlaurent\Accounting\Services;
 
 use Carbon\Carbon;
 use Scottlaurent\Accounting\Models\Journal;
 use Money\Money;
 use Money\Currency;
+use Scottlaurent\Accounting\Exceptions\{InvalidJournalEntryValue,
+    InvalidJournalMethod,
+    DebitsAndCreditsDoNotEqual,
+    TransactionCouldNotBeProcessed
+};
+use Illuminate\Support\Facades\DB;
 
-use Scottlaurent\Accounting\Exceptions\InvalidJournalEntryValue;
-use Scottlaurent\Accounting\Exceptions\InvalidJournalMethod;
-use Scottlaurent\Accounting\Exceptions\DebitsAndCreditsDoNotEqual;
-use Scottlaurent\Accounting\Exceptions\TransactionCouldNotBeProcessed;
-
-use DB;
-
-/**
- * Class Accounting
- * @package Scottlaurent\Accounting\Services
- */
 class Accounting
 {
-
     /**
      * @var array
      */
     protected $transactions_pending = [];
 
-    /**
-     * @return Accounting
-     */
-    public static function newDoubleEntryTransactionGroup()
+    public static function newDoubleEntryTransactionGroup(): Accounting
     {
         return new self;
     }
@@ -45,8 +38,14 @@ class Accounting
      * @throws InvalidJournalMethod
      * @internal param int $value
      */
-    function addTransaction(Journal $journal, string $method, Money $money, string $memo = null, $referenced_object = null, Carbon $postdate = null)
-    {
+    function addTransaction(
+        Journal $journal,
+        string $method,
+        Money $money,
+        string $memo = null,
+        $referenced_object = null,
+        Carbon $postdate = null
+    ): void {
 
         if (!in_array($method, ['credit', 'debit'])) {
             throw new InvalidJournalMethod;
@@ -64,7 +63,6 @@ class Accounting
             'referenced_object' => $referenced_object,
             'postdate' => $postdate
         ];
-
     }
 
     /**
@@ -77,36 +75,35 @@ class Accounting
      * @throws InvalidJournalEntryValue
      * @throws InvalidJournalMethod
      */
-    function addDollarTransaction(Journal $journal, string $method, $value, string $memo = null, $referenced_object = null, Carbon $postdate = null)
-    {
+    function addDollarTransaction(
+        Journal $journal,
+        string $method,
+        $value,
+        string $memo = null,
+        $referenced_object = null,
+        Carbon $postdate = null
+    ): void {
         $value = (int)($value * 100);
         $money = new Money($value, new Currency('USD'));
         $this->addTransaction($journal, $method, $money, $memo, $referenced_object, $postdate);
     }
 
-    /**
-     * @return array
-     */
-    function getTransactionsPending()
+    function getTransactionsPending(): array
     {
         return $this->transactions_pending;
     }
 
-    /**
-     *
-     */
-    public function commit()
+    public function commit(): string
     {
         $this->verifyTransactionCreditsEqualDebits();
-
         try {
-
-            $transaction_group = \Ramsey\Uuid\Uuid::uuid4()->toString();
+            $transactionGroupUUID = \Ramsey\Uuid\Uuid::uuid4()->toString();
 
             DB::beginTransaction();
 
             foreach ($this->transactions_pending as $transaction_pending) {
-                $transaction = $transaction_pending['journal']->{$transaction_pending['method']}($transaction_pending['money'], $transaction_pending['memo'], $transaction_pending['postdate'], $transaction_group);
+                $transaction = $transaction_pending['journal']->{$transaction_pending['method']}($transaction_pending['money'],
+                    $transaction_pending['memo'], $transaction_pending['postdate'], $transactionGroupUUID);
                 if ($object = $transaction_pending['referenced_object']) {
                     $transaction->referencesObject($object);
                 }
@@ -114,21 +111,18 @@ class Accounting
 
             DB::commit();
 
-            return $transaction_group;
+            return $transactionGroupUUID;
 
         } catch (\Exception $e) {
-
             DB::rollBack();
-
             throw new TransactionCouldNotBeProcessed('Rolling Back Database. Message: ' . $e->getMessage());
         }
     }
 
-
     /**
-     *
+     * @throws DebitsAndCreditsDoNotEqual
      */
-    private function verifyTransactionCreditsEqualDebits()
+    private function verifyTransactionCreditsEqualDebits(): void
     {
         $credits = 0;
         $debits = 0;
@@ -145,6 +139,4 @@ class Accounting
             throw new DebitsAndCreditsDoNotEqual('In this transaction, credits == ' . $credits . ' and debits == ' . $debits);
         }
     }
-
-
 }

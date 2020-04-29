@@ -13,12 +13,6 @@
         "moneyphp/money": "^3.0",
         "ramsey/uuid": "^3.7"
     },
-    "require-dev": {
-        "mockery/mockery": "^0.9.5",
-        "orchestra/testbench": "~3.4.0",
-        "orchestra/database": "~3.4.0",
-        "phpunit/phpunit": "^5.2"
-    },
     "extra": {
         "laravel": {
             "providers": [
@@ -30,5 +24,10 @@
         "psr-4": {
             "Scottlaurent\\Accounting\\": "src/"
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9",
+        "mockery/mockery": "^1.3",
+        "orchestra/testbench": "^5.2"
     }
 }

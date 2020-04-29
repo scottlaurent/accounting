@@ -1,16 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class CreateAccountingLedgersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::create('accounting_ledgers', function (Blueprint $table) {
             $table->increments('id');
@@ -19,13 +17,8 @@ class CreateAccountingLedgersTable extends Migration
             $table->timestamps();
         });
     }
-    
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+
+    public function down(): void
     {
         Schema::dropIfExists('accounting_ledgers');
     }

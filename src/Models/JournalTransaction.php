@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Scottlaurent\Accounting\Models;
 
 use Illuminate\Database\Eloquent\Model;
