@@ -24,9 +24,9 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 
 ## <a name="installation"></a>Installation
 
-1) composer require "scottlaurent/accounting"
+1) run composer require "scottlaurent/accounting"
 
-2) copy the files in the migrations folder over to your migrations and run them.  This will install 3 new tables in your database.  The ledger migration is optional and you should look at SCENARIO C below to determine if you will even use this.
+2) run php artisan vendor:publish  This will install 3 new tables in your database.  The ledger migration is optional and you should look at SCENARIO C below to determine if you will even use this.
 
 3) add the trait to any model you want to keep a journal for.
 
