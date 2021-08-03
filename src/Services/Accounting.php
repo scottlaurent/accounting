@@ -34,6 +34,7 @@ class Accounting
      * @param string|null $memo
      * @param null $referenced_object
      * @param Carbon|null $postdate
+     * @param array $tags
      * @throws InvalidJournalEntryValue
      * @throws InvalidJournalMethod
      * @internal param int $value
@@ -44,7 +45,8 @@ class Accounting
         Money $money,
         string $memo = null,
         $referenced_object = null,
-        Carbon $postdate = null
+        Carbon $postdate = null,
+        array $tags = []
     ): void {
 
         if (!in_array($method, ['credit', 'debit'])) {
@@ -61,7 +63,8 @@ class Accounting
             'money' => $money,
             'memo' => $memo,
             'referenced_object' => $referenced_object,
-            'postdate' => $postdate
+            'postdate' => $postdate,
+            'tags' => $tags
         ];
     }
 
@@ -106,6 +109,10 @@ class Accounting
                     $transaction_pending['memo'], $transaction_pending['postdate'], $transactionGroupUUID);
                 if ($object = $transaction_pending['referenced_object']) {
                     $transaction->referencesObject($object);
+                }
+                $tags = $transaction_pending['tags'];
+                if (count($tags) > 0) {
+                    $transaction->updateTags($tags);
                 }
             }
 

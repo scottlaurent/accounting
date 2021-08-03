@@ -119,4 +119,17 @@ class JournalTransaction extends Model
         $this->currency = $currency;
     }
 
+    /**
+     * Update tags.
+     *
+     * @param array $tags
+     * @return JournalTransaction
+     */
+    public function updateTags(array $tags)
+    {
+        $this->tags = $tags;
+        $this->save();
+        return $this;
+    }
+
 }
