@@ -9,19 +9,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Money\Money;
 use Money\Currency;
+use Scottlaurent\Accounting\Enums\LedgerType;
 
 class Ledger extends Model
 {
-    protected string $table = 'accounting_ledgers';
+    protected $table = 'accounting_ledgers';
     
-    protected array $fillable = [
+    protected $fillable = [
         'name',
         'type',
     ];
     
-    protected array $casts = [
+    protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'type' => LedgerType::class,
     ];
     
     public function journals(): HasMany
@@ -37,8 +39,10 @@ class Ledger extends Model
     public function getCurrentBalance(string $currency): Money
     {
         $balance = match ($this->type) {
-            'asset', 'expense' => $this->journalTransactions->sum('debit') - $this->journalTransactions->sum('credit'),
-            default => $this->journalTransactions->sum('credit') - $this->journalTransactions->sum('debit'),
+            LedgerType::ASSET, LedgerType::EXPENSE => 
+                $this->journalTransactions->sum('debit') - $this->journalTransactions->sum('credit'),
+            default => 
+                $this->journalTransactions->sum('credit') - $this->journalTransactions->sum('debit'),
         };
         
         return new Money($balance, new Currency($currency));
@@ -49,14 +53,11 @@ class Ledger extends Model
         return $this->getCurrentBalance('USD')->getAmount() / 100;
     }
     
-    public function getTypeOptions(): array
+    public static function getTypeOptions(): array
     {
-        return [
-            'asset' => 'Asset',
-            'liability' => 'Liability',
-            'equity' => 'Equity',
-            'income' => 'Income',
-            'expense' => 'Expense',
-        ];
+        return array_combine(
+            array_column(LedgerType::cases(), 'value'),
+            array_map(fn($case) => ucfirst($case->value), LedgerType::cases())
+        );
     }
 }

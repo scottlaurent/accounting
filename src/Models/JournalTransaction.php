@@ -10,13 +10,13 @@ use Ramsey\Uuid\Uuid;
 
 class JournalTransaction extends Model
 {
-    protected string $table = 'accounting_journal_transactions';
+    protected $table = 'accounting_journal_transactions';
     
-    public bool $incrementing = false;
+    public $incrementing = false;
     
-    protected array $guarded = ['id'];
+    protected $guarded = ['id'];
     
-    protected array $casts = [
+    protected $casts = [
         'post_date' => 'datetime',
         'tags' => 'array',
         'debit' => 'int',

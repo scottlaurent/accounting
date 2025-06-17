@@ -14,9 +14,9 @@ use Carbon\Carbon;
 
 class Journal extends Model
 {
-    protected string $table = 'accounting_journals';
+    protected $table = 'accounting_journals';
     
-    protected array $dates = [
+    protected $dates = [
         'deleted_at',
         'updated_at'
     ];
@@ -83,11 +83,16 @@ class Journal extends Model
 
     protected function setBalanceAttribute(mixed $value): void
     {
-        $value = $value instanceof Money 
-            ? $value 
-            : new Money($value, new Currency($this->currency));
-            
-        $this->attributes['balance'] = $value ? (int) $value->getAmount() : null;
+        if ($value instanceof Money) {
+            $this->attributes['balance'] = (int) $value->getAmount();
+            $this->currency = $value->getCurrency()->getCode();
+            return;
+        }
+        
+        // If we don't have a currency set yet, default to USD
+        $currency = $this->currency ?? 'USD';
+        $money = new Money($value, new Currency($currency));
+        $this->attributes['balance'] = (int) $money->getAmount();
     }
 
     public function getDebitBalanceOn(Carbon $date): Money
