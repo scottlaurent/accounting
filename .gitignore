@@ -1,13 +1,80 @@
-build/
-cache/
-/bootstrap/compiled.php
-/vendor
-composer.phar
+# Laravel 8+ default .gitignore
+/vendor/
+/node_modules/
+npm-debug.log
+yarn-error.log
+
+# Laravel 4 specific
+bootstrap/compiled.php
+app/storage/
+
+# Laravel 5 & Lumen specific
+public/storage
+public/hot
+
+# Laravel 5 & Lumen specific with changed public path
+public_html/storage
+public_html/hot
+
+# Laravel 5 & Lumen specific with changed public path
+public_html/public/storage
+public_html/public/hot
+
+# Environment
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.yaml
+Homestead.json
+/.vagrant
+.phpunit.result.cache
+
+# IDE specific files
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
 .DS_Store
 Thumbs.db
-/conf
-.idea
-/.settings
-.env.*.php
-.env.php
-composer.lock
+
+# Composer
+/composer.lock
+/composer.phar
+/vendor/
+
+# Testing
+/coverage
+.phpunit.cache
+
+# Local development
+.docker
+.docker-sync
+.ddev/
+
+# Database
+*.sqlite
+*.sqlite-journal
+*.sqlite3
+
+# Debug
+.php_cs.cache
+.php_cs.cache.*
+
+# Build
+dist/
+build/
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

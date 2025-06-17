@@ -9,9 +9,39 @@
             "email": "scott@baselineapplications.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packages.tools/testbench"
+        }
+    ],
     "require": {
-        "moneyphp/money": "^3.0",
+        "php": "^8.2",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-pdo": "*",
+        "moneyphp/money": "^4.0",
         "ramsey/uuid": "^4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5",
+        "mockery/mockery": "^1.6.10",
+        "fakerphp/faker": "^1.23",
+        "orchestra/testbench": "^8.0",
+        "orchestra/testbench-dusk": "^8.0",
+        "ext-gd": "*",
+        "ext-zip": "*"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true,
+            "phpunit/phpunit": true
+        },
+        "platform-check": false
     },
     "extra": {
         "laravel": {
@@ -25,9 +55,15 @@
             "Scottlaurent\\Accounting\\": "src/"
         }
     },
-    "require-dev": {
-        "phpunit/phpunit": "^9",
-        "mockery/mockery": "^1.3",
-        "orchestra/testbench": "^5.2"
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test:coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html coverage"
     }
 }
