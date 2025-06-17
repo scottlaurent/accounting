@@ -6,13 +6,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateAccountingJournalTransactionsTable extends Migration
+class CreateTestingAccountingJournalTransactionsTable extends Migration
 {
-    /**
-     * @var array
-     */
-    protected $guarded = ['id'];
-
     public function up(): void
     {
         Schema::create('accounting_journal_transactions', function (Blueprint $table) {
