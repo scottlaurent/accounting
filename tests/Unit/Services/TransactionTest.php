@@ -173,8 +173,8 @@ class TransactionTest extends TestCase
         // Verify journal balances were updated
         // In this implementation, debits decrease the balance and credits increase it
         // This is because getBalance() calculates as sum('debit') - sum('credit')
-        $this->assertEquals(-1000, $journal1->balance->getAmount(), 'Debit should decrease balance');
-        $this->assertEquals(1000, $journal2->balance->getAmount(), 'Credit should increase balance');
+        $this->assertEquals(1000, $journal1->balance->getAmount(), 'Debit should increase balance');
+        $this->assertEquals(-1000, $journal2->balance->getAmount(), 'Credit should decrease balance');
     }
 
     public function testAddTransactionWithPostDate()

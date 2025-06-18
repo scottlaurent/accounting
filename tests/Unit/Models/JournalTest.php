@@ -340,8 +340,8 @@ class JournalTest extends TestCase
         
         $balance = $journal->getBalanceOn(Carbon::now());
         
-        // Credit - Debit = 300 - 1000 = -700
-        $this->assertEquals(-700, $balance->getAmount());
+        // Debit - Credit = 1000 - 300 = 700 (correct accounting)
+        $this->assertEquals(700, $balance->getAmount());
     }
 
     public function test_get_current_balance(): void
@@ -362,7 +362,7 @@ class JournalTest extends TestCase
         
         $balance = $journal->getCurrentBalance();
         
-        $this->assertEquals(-1200, $balance->getAmount()); // Should be negative for credit - debit
+        $this->assertEquals(1200, $balance->getAmount()); // Should be positive for debit - credit
     }
 
     public function test_get_current_balance_in_dollars(): void
@@ -383,7 +383,7 @@ class JournalTest extends TestCase
         
         $balance = $journal->getCurrentBalanceInDollars();
         
-        $this->assertEquals(-12.50, $balance); // Should be negative for credit - debit
+        $this->assertEquals(12.50, $balance); // Should be positive for debit - credit
     }
 
     public function test_credit_dollars_method(): void

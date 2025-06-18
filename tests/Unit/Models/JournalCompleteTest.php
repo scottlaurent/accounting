@@ -169,6 +169,6 @@ class JournalCompleteTest extends TestCase
         ]);
         
         $balance = $journal->getBalanceOn($futureDate);
-        $this->assertEquals(-1000, $balance->getAmount()); // Should include past transaction
+        $this->assertEquals(1000, $balance->getAmount()); // Should include past transaction (debit - credit)
     }
 }

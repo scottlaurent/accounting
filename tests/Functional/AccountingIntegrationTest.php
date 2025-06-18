@@ -92,8 +92,8 @@ class AccountingIntegrationTest extends TestCase
         // The system calculates balance as debit - credit
         // For asset accounts (like cash), debits should increase the balance (positive)
         // For revenue accounts, credits should increase the balance (positive)
-        $this->assertEquals(-150.00, $cashJournal->getCurrentBalanceInDollars(), 'Debit should increase asset balance (negative balance)');
-        $this->assertEquals(150.00, $revenueJournal->getCurrentBalanceInDollars(), 'Credit should increase revenue balance');
+        $this->assertEquals(150.00, $cashJournal->getCurrentBalanceInDollars(), 'Debit should increase asset balance (positive balance)');
+        $this->assertEquals(-150.00, $revenueJournal->getCurrentBalanceInDollars(), 'Credit should increase revenue balance (negative in debit-credit system)');
         
         // Verify transaction was recorded
         $this->assertCount(1, $cashJournal->transactions);

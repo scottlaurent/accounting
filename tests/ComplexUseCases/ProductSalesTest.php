@@ -274,17 +274,17 @@ class ProductSalesTest extends TestCase
         // - Sales revenue to increase (negative credit)
         // - COGS to increase (positive debit)
         
-        // In this system, debits are negative and credits are positive
-        // This is the opposite of standard accounting practice, but we'll adjust our assertions accordingly
+        // In this system, debits are positive and credits are negative (standard accounting)
+        // For asset accounts, debits increase the balance (positive)
+
+        // Assert that cash balance is positive (debit balance for asset)
+        $this->assertGreaterThan(0, $cashBalance, 'Cash balance should be positive after a cash sale (debit balance for asset)');
         
-        // Assert that cash balance is negative (debit balance for asset)
-        $this->assertLessThan(0, $cashBalance, 'Cash balance should be negative after a cash sale (debit balance for asset)');
-        
-        // Assert that sales balance is positive (credit balance for revenue)
-        $this->assertGreaterThan(0, $salesBalance, 'Sales balance should be positive (credit balance for revenue)');
-        
-        // Assert that COGS balance is negative (debit balance for expense)
-        $this->assertEquals(-90.00, $cogsBalance, 'COGS should be 2 units * $45 cost = -$90 (debit balance)');
+        // Assert that sales balance is negative (credit balance for revenue)
+        $this->assertLessThan(0, $salesBalance, 'Sales balance should be negative (credit balance for revenue)');
+
+        // Assert that COGS balance is positive (debit balance for expense)
+        $this->assertEquals(90.00, $cogsBalance, 'COGS should be 2 units * $45 cost = $90 (debit balance)');
     }
     
     public function testProductSaleWithCreditPayment()
@@ -333,17 +333,17 @@ class ProductSalesTest extends TestCase
         // - Sales revenue to increase (negative credit)
         // - COGS to increase (positive debit)
         
-        // In this system, debits are negative and credits are positive
-        // This is the opposite of standard accounting practice, but we'll adjust our assertions accordingly
+        // In this system, debits are positive and credits are negative (standard accounting)
+        // For asset accounts, debits increase the balance (positive)
+
+        // Assert that AR balance is positive (debit balance for asset)
+        $this->assertGreaterThan(0, $arBalance, 'AR balance should be positive after a credit sale (debit balance for asset)');
         
-        // Assert that AR balance is negative (debit balance for asset)
-        $this->assertLessThan(0, $arBalance, 'AR balance should be negative after a credit sale (debit balance for asset)');
-        
-        // Assert that sales balance is positive (credit balance for revenue)
-        $this->assertGreaterThan(0, $salesBalance, 'Sales balance should be positive (credit balance for revenue)');
-        
-        // Assert that COGS balance is negative (debit balance for expense)
-        $this->assertEquals(-255.00, $cogsBalance, 'COGS should be 3 units * $85 cost = -$255 (debit balance)');
+        // Assert that sales balance is negative (credit balance for revenue)
+        $this->assertLessThan(0, $salesBalance, 'Sales balance should be negative (credit balance for revenue)');
+
+        // Assert that COGS balance is positive (debit balance for expense)
+        $this->assertEquals(255.00, $cogsBalance, 'COGS should be 3 units * $85 cost = $255 (debit balance)');
     }
     
     protected function addToInventory(Product $product, int $quantity, float $unitCost): void

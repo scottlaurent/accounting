@@ -156,8 +156,8 @@ class Journal extends Model
 
     public function getBalanceOn(Carbon $date): Money
     {
-        return $this->getCreditBalanceOn($date)
-            ->subtract($this->getDebitBalanceOn($date));
+        return $this->getDebitBalanceOn($date)
+            ->subtract($this->getCreditBalanceOn($date));
     }
 
     public function getCurrentBalance(): Money
