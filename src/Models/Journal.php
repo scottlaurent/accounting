@@ -38,8 +38,22 @@ class Journal extends Model
     {
         parent::boot();
         
+        static::creating(function (self $journal): void {
+            // Always initialize with zero balance if currency is set
+            if (!empty($journal->currency)) {
+                $journal->balance = 0;
+            } else {
+                // Set balance directly in attributes to avoid currency check
+                $journal->attributes['balance'] = 0;
+            }
+        });
+        
         static::created(function (self $journal): void {
-            $journal->resetCurrentBalances();
+            // Reset balances to ensure they're in sync with transactions
+            // Only if currency is set
+            if (!empty($journal->currency)) {
+                $journal->resetCurrentBalances();
+            }
         });
     }
 
@@ -70,9 +84,22 @@ class Journal extends Model
 
     public function resetCurrentBalances(): Money
     {
-        $this->balance = $this->getBalance();
-        $this->save();
-        
+        // Only reset if currency is set
+        if (empty($this->currency)) {
+            $this->attributes['balance'] = 0;
+            return new Money(0, new Currency('USD')); // Default currency
+        }
+
+        // Recalculate balance from transactions if any exist
+        if ($this->transactions()->exists()) {
+            $this->balance = $this->getBalance();
+            $this->save();
+        } else {
+            // Otherwise, ensure balance is zero
+            $this->balance = new Money(0, new Currency($this->currency));
+            $this->save();
+        }
+
         return $this->balance;
     }
 
@@ -83,15 +110,22 @@ class Journal extends Model
 
     protected function setBalanceAttribute(mixed $value): void
     {
+        // If value is a Money object, extract amount and currency
         if ($value instanceof Money) {
             $this->attributes['balance'] = (int) $value->getAmount();
             $this->currency = $value->getCurrency()->getCode();
             return;
         }
         
-        // If we don't have a currency set yet, default to USD
-        $currency = $this->currency ?? 'USD';
-        $money = new Money($value, new Currency($currency));
+        // If currency is not set, set a default
+        if (empty($this->currency)) {
+            $this->currency = 'USD'; // Default currency
+        }
+        
+        // Handle both string and numeric values
+        $amount = is_numeric($value) ? (int) $value : 0;
+        $money = new Money($amount, new Currency($this->currency));
+        
         $this->attributes['balance'] = (int) $money->getAmount();
     }
 
@@ -134,7 +168,7 @@ class Journal extends Model
     public function getBalance(): Money
     {
         $balance = $this->transactions()->exists()
-            ? $this->transactions()->sum('credit') - $this->transactions()->sum('debit')
+            ? $this->transactions()->sum('debit') - $this->transactions()->sum('credit')
             : 0;
 
         return new Money($balance, new Currency($this->currency));
@@ -147,7 +181,8 @@ class Journal extends Model
 
     public function getBalanceInDollars(): float
     {
-        return $this->getBalance()->getAmount() / 100;
+        $amount = $this->getBalance()->getAmount();
+        return round($amount / 100, 2);
     }
 
     public function credit(
@@ -231,7 +266,8 @@ class Journal extends Model
     ): JournalTransaction {
         $currencyCode = ($credit ?? $debit)->getCurrency()->getCode();
         
-        return $this->transactions()->create([
+        // Create the transaction
+        $transaction = $this->transactions()->create([
             'credit' => $credit?->getAmount(),
             'debit' => $debit?->getAmount(),
             'memo' => $memo,
@@ -239,5 +275,12 @@ class Journal extends Model
             'post_date' => $post_date ?? Carbon::now(),
             'transaction_group' => $transaction_group,
         ]);
+        
+        // Update the journal's balance
+        $this->refresh();
+        $this->balance = $this->getCurrentBalance();
+        $this->save();
+        
+        return $transaction;
     }
 }

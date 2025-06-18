@@ -7,7 +7,7 @@ DOCKER_SERVICE = app
 PHP = $(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) php
 COMPOSER = $(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) composer
 ARTISAN = $(PHP) artisan
-PHPUNIT = $(PHP) ./vendor/bin/phpunit
+PHPUNIT = $(PHP) /var/www/vendor/bin/phpunit
 
 ## —— Docker Compose ————————————————————————————————————————————————————————————
 up: ## Start all containers in the background
@@ -39,14 +39,25 @@ update: ## Update dependencies
 	@$(COMPOSER) update
 
 ## —— Testing ———————————————————————————————————————————————————————————————————
-test: ## Run all tests
-	@$(PHPUNIT) --testdox
+test: ## Run all tests with coverage report
+	$(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) bash -c "cd /var/www && XDEBUG_MODE=coverage ./vendor/bin/phpunit --testdox --coverage-text --colors=never"
 
-test-coverage: ## Generate test coverage report
-	@XDEBUG_MODE=coverage $(PHP) -dxdebug.mode=coverage $(PHPUNIT) --coverage-html coverage
+test-coverage: ## Generate HTML test coverage report
+	$(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) bash -c "cd /var/www && XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html=coverage"
+
+coverage: test-coverage ## Alias for test-coverage
+
+open-coverage: test-coverage ## Open the coverage report in default browser
+	@if command -v xdg-open > /dev/null; then \
+		xdg-open coverage/index.html; \
+	elif command -v open > /dev/null; then \
+		open coverage/index.html; \
+	else \
+		echo "Please open coverage/index.html in your browser"; \
+	fi
 
 test-phpunit: ## Run PHPUnit tests
-	@$(PHPUNIT) $(filter-out $@,$(MAKECMDGOALS))
+	$(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) bash -c "cd /var/www && ./vendor/bin/phpunit $(filter-out $@,$(MAKECMDGOALS))"
 
 test-pest: ## Run Pest tests
 	@$(PHP) vendor/bin/pest $(filter-out $@,$(MAKECMDGOALS))

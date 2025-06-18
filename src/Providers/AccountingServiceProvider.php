@@ -14,7 +14,7 @@ class AccountingServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->publishes([
-            __DIR__ . '/../../config/accounting.php' => config_path('accounting.php'),
+            __DIR__ . '/../config/accounting.php' => config_path('accounting.php'),
         ], 'config');
 
         $this->publishes([
@@ -27,6 +27,6 @@ class AccountingServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../../config/accounting.php', 'accounting');
+        $this->mergeConfigFrom(__DIR__ . '/../config/accounting.php', 'accounting');
     }
 }
