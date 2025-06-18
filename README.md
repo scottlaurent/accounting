@@ -321,7 +321,3 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 ## License
 
 This package is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
----
-
-It's been my experience, in practice, that keeping the 5 basic ledger types, some initial company journals, and then adding a journal for users and sometimes vendor journals assigned to the expense ledger keeps things pretty simple.  Anything more complex usually winds up being migrated eventually into a financial system, or in some cases, just synced.
