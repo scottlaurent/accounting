@@ -14,7 +14,7 @@ class CreateAccountingJournalsTable extends Migration
             $table->increments('id');
             $table->unsignedInteger('ledger_id')->nullable();
             $table->bigInteger('balance');
-            $table->string('currency', 5);
+            $table->string('currency', 3);
             $table->string('morphed_type', 32);
             $table->integer('morphed_id');
             $table->timestamps();

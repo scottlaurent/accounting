@@ -90,27 +90,10 @@ class DateTimeEdgeCaseTest extends TestCase
         // Use a future date to include all transactions in balance calculations
         $futureDate = Carbon::now()->addYear();
         
-        // Test 1: Verify total balance (should be +4500.00 for asset account with debits)
+        // Verify total balance (should be +4500.00 for asset account with debits)
         $this->assertEquals(450000, $journal->getBalanceOn($futureDate)->getAmount(), 'Total balance should be +4500.00');
 
-        // Debug: Output all transactions with their dates and amounts
-        $transactions = $journal->transactions()->orderBy('post_date')->get();
-        echo "\n=== Transactions ===\n";
-        foreach ($transactions as $tx) {
-            $debit = $tx->debit;
-            $credit = $tx->credit;
-            $amount = $debit > 0 ? $debit : -$credit;
-            echo sprintf(
-                "%s - %s: %s (%s)\n",
-                $tx->post_date,
-                $tx->memo,
-                number_format($amount / 100, 2),
-                $debit > 0 ? 'debit' : 'credit'
-            );
-        }
-        echo "\n";
-
-        // Test 2: Verify balance at test date + 1 hour (should only include transactions up to that point)
+        // Verify balance at test date + 1 hour (should only include transactions up to that point)
         $balanceDate1 = $testDate->copy()->addHour();
         $balanceAtHour1 = $journal->getBalanceOn($balanceDate1)->getAmount();
         echo "Balance at {$balanceDate1}: {$balanceAtHour1}\n";
@@ -121,7 +104,7 @@ class DateTimeEdgeCaseTest extends TestCase
             'Balance at test date + 1 hour should be +1600.00'
         );
 
-        // Test 3: Verify end of month balance (should include all transactions up to July 1st)
+        // Verify end of month balance (should include all transactions up to July 1st)
         $endOfMonth = $testDate->copy()->endOfMonth();
         $balanceDate2 = $endOfMonth->copy()->addDay();
         $this->assertEquals(
@@ -130,7 +113,7 @@ class DateTimeEdgeCaseTest extends TestCase
             'Balance after end of month should be +4500.00'
         );
 
-        // Test 4: Verify end of year balance (should include all transactions)
+        // Verify end of year balance (should include all transactions)
         $balanceDate3 = $testDate->copy()->addYear();
         $this->assertEquals(
             450000, // All transactions
@@ -138,21 +121,21 @@ class DateTimeEdgeCaseTest extends TestCase
             'Balance after 1 year should be +4500.00'
         );
 
-        // Test 5: Verify final balance
+        // Verify final balance
         $this->assertEquals(
             450000,
             $journal->getBalanceOn($futureDate)->getAmount(),
             'Final balance should be +4500.00'
         );
 
-        // Test 6: Verify daily totals (checking debits since all transactions are debits)
+        // Verify daily totals (checking debits since all transactions are debits)
         $this->assertEquals(
             (10000 + 20000 + 80000) / 100, // All transactions on the test date (converted to dollars)
             $journal->getDollarsDebitedOn($testDate),
             'Total debited on test date should be 1100.00'
         );
 
-        // Test 7: Verify ledger balance matches journal balance
+        // Verify ledger balance matches journal balance
         $this->assertEquals(
             $journal->getBalance()->getAmount(),
             $ledger->getCurrentBalance('USD')->getAmount(),
