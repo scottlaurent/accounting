@@ -13,9 +13,12 @@ class CreateAccountingLedgersTable extends Migration
     {
         Schema::create('accounting_ledgers', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
+            $table->string('name', 255);
             $table->enum('type', LedgerType::values());
             $table->timestamps();
+
+            $table->index('type', 'idx_ledgers_type');
+            $table->index('name', 'idx_ledgers_name');
         });
     }
 
