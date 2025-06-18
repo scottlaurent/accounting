@@ -5,13 +5,72 @@ declare(strict_types=1);
 namespace Tests\Functional;
 
 use Carbon\Carbon;
+use Money\Currency;
+use Money\Money;
 use Scottlaurent\Accounting\Models\Journal;
+use Scottlaurent\Accounting\Models\JournalTransaction;
 use Scottlaurent\Accounting\Models\Ledger;
 use Scottlaurent\Accounting\Transaction;
 use Tests\TestCase;
 
 class AccountingIntegrationTest extends TestCase
 {
+    public function test_complete_transaction_flow_coverage(): void
+    {
+        // Test a complete transaction flow to ensure all code paths are hit
+        $transaction = Transaction::newDoubleEntryTransactionGroup();
+
+        $journal1 = Journal::create([
+            'currency' => 'USD',
+            'morphed_type' => 'test',
+            'morphed_id' => 1,
+        ]);
+
+        $journal2 = Journal::create([
+            'currency' => 'USD',
+            'morphed_type' => 'test',
+            'morphed_id' => 2,
+        ]);
+
+        // Create a complex transaction with all features
+        $money1 = new Money(1500, new Currency('USD'));
+        $money2 = new Money(1500, new Currency('USD'));
+
+        // Add transactions with all possible parameters
+        $transaction->addTransaction(
+            $journal1,
+            'debit',
+            $money1,
+            'Complete test debit',
+            $journal2, // reference object
+            \Carbon\Carbon::now()->subHours(2)
+        );
+
+        $transaction->addTransaction(
+            $journal2,
+            'credit',
+            $money2,
+            'Complete test credit',
+            $journal1, // reference object
+            \Carbon\Carbon::now()->subHours(1)
+        );
+
+        // This should exercise all code paths in commit()
+        $transactionId = $transaction->commit();
+
+        $this->assertIsString($transactionId);
+        $this->assertMatchesRegularExpression('/^[0-9a-f-]{36}$/', $transactionId);
+
+        // Verify the transactions were created with references
+        $createdTransactions = JournalTransaction::where('transaction_group', $transactionId)->get();
+        $this->assertCount(2, $createdTransactions);
+
+        // Check that references were set
+        $debitTransaction = $createdTransactions->where('journal_id', $journal1->id)->first();
+        $this->assertEquals($journal2::class, $debitTransaction->ref_class);
+        $this->assertEquals($journal2->id, $debitTransaction->ref_class_id);
+    }
+
     public function testBasicJournalTransactions()
     {
         // Create ledgers

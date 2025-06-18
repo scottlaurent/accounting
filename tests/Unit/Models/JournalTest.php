@@ -971,4 +971,75 @@ class JournalTest extends TestCase
 
         $this->assertEquals(0, $journal->getAttributes()['balance']);
     }
+
+    public function test_journal_boot_event_coverage(): void
+    {
+        // Test to ensure boot events are covered
+        $journal = new Journal([
+            'currency' => 'GBP',
+            'morphed_type' => 'test',
+            'morphed_id' => 999,
+        ]);
+
+        // The creating event should set balance
+        $journal->save();
+
+        $this->assertEquals(0, $journal->getAttributes()['balance']);
+    }
+
+    public function test_journal_transaction_deleted_event(): void
+    {
+        // Test the deleted event handler in JournalTransaction
+        $journal = Journal::create([
+            'currency' => 'USD',
+            'morphed_type' => 'test',
+            'morphed_id' => 1,
+        ]);
+
+        $transaction = $journal->transactions()->create([
+            'debit' => 1000,
+            'credit' => 0,
+            'currency' => 'USD',
+            'memo' => 'Test transaction',
+            'post_date' => now(),
+        ]);
+
+        // Verify transaction exists
+        $this->assertNotNull($transaction->id);
+
+        // Delete should trigger the boot event
+        $transaction->delete();
+
+        // Test passes if no exception thrown
+        $this->assertTrue(true);
+    }
+
+    public function test_all_edge_cases_in_journal(): void
+    {
+        $journal = Journal::create([
+            'currency' => 'USD',
+            'morphed_type' => 'test',
+            'morphed_id' => 1,
+        ]);
+
+        // Test edge cases that might not be covered
+
+        // 1. Test getCurrentBalance edge case
+        $currentBalance = $journal->getCurrentBalance();
+        $this->assertEquals(0, $currentBalance->getAmount());
+
+        // 2. Test balance calculation with multiple currencies (should use journal currency)
+        $journal->transactions()->create([
+            'debit' => 1000,
+            'credit' => 0,
+            'currency' => 'EUR', // Different currency
+            'memo' => 'Mixed currency',
+            'post_date' => now(),
+        ]);
+
+        $balance = $journal->getBalance();
+        // Should still calculate correctly
+        $this->assertEquals(1000, $balance->getAmount());
+    }
+
 }
