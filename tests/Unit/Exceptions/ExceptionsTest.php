@@ -139,16 +139,6 @@ class ExceptionsTest extends TestCase
         $this->assertInstanceOf(\Scottlaurent\Accounting\Exceptions\BaseException::class, $exception);
     }
 
-    public function test_config_file_class_coverage(): void
-    {
-        // Test that the config file is loaded and accessible to ensure it's covered
-        $config = include __DIR__ . '/../../../src/config/accounting.php';
-
-        $this->assertIsArray($config);
-        $this->assertArrayHasKey('base_currency', $config);
-        $this->assertEquals('USD', $config['base_currency']);
-    }
-
     public function test_missing_exception_classes_direct_instantiation(): void
     {
         // Test direct instantiation of exception classes that might not be covered

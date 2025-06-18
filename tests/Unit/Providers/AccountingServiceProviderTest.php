@@ -18,27 +18,26 @@ class AccountingServiceProviderTest extends TestCase
         $this->assertInstanceOf(AccountingServiceProvider::class, $provider);
     }
 
-    public function test_register_method_merges_config(): void
+    public function test_register_method_executes_successfully(): void
     {
         $app = $this->app;
         $provider = new AccountingServiceProvider($app);
-        
+
         // Call register method
         $provider->register();
-        
-        // Verify that the accounting config was merged
-        // We can check if the config contains expected keys
-        $this->assertTrue(true); // The register method completes without error
+
+        // The register method should complete without error
+        $this->assertTrue(true);
     }
 
-    public function test_boot_method_publishes_configs(): void
+    public function test_boot_method_publishes_migrations(): void
     {
         $app = $this->app;
         $provider = new AccountingServiceProvider($app);
-        
-        // Mock the publishes method calls
+
+        // Call boot method to publish migrations
         $provider->boot();
-        
+
         // The boot method should complete without error
         $this->assertTrue(true);
     }
