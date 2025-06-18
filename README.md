@@ -32,8 +32,27 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 
 4) ** most of the time you will want to add the $model->initJournal() into the static::created() method of your model so that a journal is created when you create the model object itself.
 
-5) If using double entry, add Scottlaurent\Accounting\Transaction to your service providers
+5) If using double entry, add the following to your `config/app.php` service providers:
 
+```php
+Scottlaurent\Accounting\Providers\AccountingServiceProvider::class,
+```
+
+This will register the `Transaction` facade and bindings needed for double-entry accounting.
+
+
+## <a name="sign-convention"></a>Sign Convention
+
+This package uses the following sign convention for accounting entries:
+
+- **Debits are negative**: When you debit an account, the balance becomes more negative
+- **Credits are positive**: When you credit an account, the balance becomes more positive
+
+This is the opposite of standard accounting practice but was implemented this way for technical reasons. Keep this in mind when working with account balances.
+
+For example:
+- Debiting an asset account (like Cash) will make the balance more negative
+- Crediting a revenue account will make the balance more positive
 
 ## <a name="code-sample"></a>Code Sample
 
@@ -53,12 +72,14 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
     $transaction_1->referencesObject($product);
     
     // check our balance (should be 100)
+    // Note: getCurrentBalanceInDollars() will return a positive number for credit balances
     $current_balance = $user->journal->getCurrentBalanceInDollars();
     
     // debit the user 
     $transaction_2 = $user->journal->debitDollars(75);
     
     // check our balance (should be 25)
+    // The balance will be positive if credits > debits, negative if debits > credits
     $current_balance = $user->journal->getCurrentBalanceInDollars();
     
     //get the product referenced in the journal (optional)
@@ -97,7 +118,33 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
      
    c. If you do more complex orders which have invoices or orders, you can still do the same thing here: debit a user model.  credit the invoice model.  then debit the invoice model and credit the account model.  This entirely depends on how you want to structure this, but the point here is that you are responsbible for doing the debits and the credits at the same time, and this can be a very simplistic and/or manual way to build out a mini-accounting system.
    
-3. SCENARIO C - You want to assign journals to a ledger type system and enforce a double entry system
+3. SCENARIO C - You want to assign journals to a ledger type system and enforce a double entry system using the `Transaction` class
+
+    The `Transaction` class provides a fluent interface for creating double-entry transactions:
+    
+    ```php
+    use Scottlaurent\Accounting\Transaction;
+    
+    // Create a new transaction group
+    $transaction = Transaction::newDoubleEntryTransactionGroup();
+    
+    // Add transactions (debit and credit)
+    $transaction->addDollarTransaction(
+        $journal,     // Journal instance
+        'debit',      // or 'credit'
+        100.00,      // amount
+        'Memo text'   // optional memo
+    );
+    
+    // Commit the transaction (will throw if debits != credits)
+    $transaction->commit();
+    ```
+    
+    The `Transaction` class ensures that all transactions are balanced (total debits = total credits) before committing to the database.
+
+4. SCENARIO D - Advanced: Product Sales with Inventory and COGS
+
+    For a complete example of handling product sales with inventory management, cost of goods sold (COGS), and different payment methods, see the `ProductSalesTest` class in the `tests/ComplexUseCases` directory.
    
    a. Run the migrations.  Then look in the tests/BaseTest setUpCompanyLedgersAndJournals() code.  Notice where 5 basic ledgers are created.  Using this as an example, create the ledgers you will be using.  You can stick with those 5 or you can make a full blown chart of accounts, just make sure that each legder entry is assigned to one of the 5 enums (income, expense, asset, liability, equity)
    
@@ -133,7 +180,73 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
     
     g. the unit tests really play out a couple complex scenarios.  They simulate about 1000 transactions, each simulating a $1-$10million purchase, split between cash and AR, and then checks the fundamental accounting equation at the end of all of this.
 
-It's been my experience, in practice, that keeping the 5 basic ledger types, some initial company journals, and then adding a journal for users and sometimes vendor journals assigned to the expense ledger keeps things pretty simple.  Anyting more complex, usually winds up beng migrated eventually into a financial system, or in some cases, just synced.  
+## Testing
+
+To run the test suite:
+
+```bash
+composer test
+```
+
+Or using the provided Makefile:
+
+```bash
+make test
+```
+
+## Sign Convention Reminder
+
+Remember the sign convention used in this package:
+
+- **Debits are negative**
+- **Credits are positive**
+
+This is particularly important when working with account balances and writing tests. The test suite includes examples of how to work with this convention.
+
+## Enhancement Recommendations
+
+The following are potential enhancements that could be made to this package in the future:
+
+1. **Standard Sign Convention**
+   - Consider aligning the sign convention with standard accounting practice (positive debits, negative credits)
+   - Add a configuration option to allow users to choose their preferred sign convention
+
+2. **Built-in Reports**
+   - Add support for common financial reports (Trial Balance, Income Statement, Balance Sheet)
+   - Implement built-in period closing functionality
+
+3. **Improved Documentation**
+   - Add more detailed API documentation
+   - Create a comprehensive user guide with common accounting scenarios
+   - Add more code examples for complex use cases
+
+4. **Testing Improvements**
+   - Increase test coverage, especially for edge cases
+   - Add integration tests for common accounting workflows
+   - Implement property-based testing for transaction validation
+
+5. **Performance Optimizations**
+   - Add support for batch transaction processing
+   - Implement caching for frequently accessed journal entries
+   - Optimize balance calculation queries for large datasets
+
+6. **Additional Features**
+   - Support for multi-currency transactions
+   - Budgeting and forecasting capabilities
+   - Tax calculation and reporting
+   - Integration with popular payment gateways
+
+## Contribution
+
+Contributions are welcome! Please feel free to submit pull requests or open issues for any bugs or feature requests. When contributing, please ensure that your code follows the existing coding style and includes appropriate tests.
+
+## License
+
+This package is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+---
+
+It's been my experience, in practice, that keeping the 5 basic ledger types, some initial company journals, and then adding a journal for users and sometimes vendor journals assigned to the expense ledger keeps things pretty simple.  Anything more complex usually winds up being migrated eventually into a financial system, or in some cases, just synced.
 
    
  

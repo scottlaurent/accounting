@@ -19,6 +19,9 @@
         <testsuite name="Functional">
             <directory suffix="Test.php">./tests/Functional</directory>
         </testsuite>
+        <testsuite name="ComplexUseCases">
+            <directory suffix="Test.php">./tests/ComplexUseCases</directory>
+        </testsuite>
     </testsuites>
 
     <php>

@@ -40,7 +40,7 @@ update: ## Update dependencies
 
 ## —— Testing ———————————————————————————————————————————————————————————————————
 test: ## Run all tests with coverage report
-	$(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) bash -c "cd /var/www && XDEBUG_MODE=coverage ./vendor/bin/phpunit --testdox --coverage-text --colors=never"
+	$(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) bash -c "cd /var/www && XDEBUG_MODE=coverage ./vendor/bin/phpunit --testdox --coverage-text"
 
 test-coverage: ## Generate HTML test coverage report
 	$(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) bash -c "cd /var/www && XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html=coverage"
