@@ -1,70 +1,24 @@
-# Laravel 8+ default .gitignore
+# Dependencies
 /vendor/
 /node_modules/
-npm-debug.log
-yarn-error.log
 
-# Laravel 4 specific
-bootstrap/compiled.php
-app/storage/
-
-# Laravel 5 & Lumen specific
-public/storage
-public/hot
-
-# Laravel 5 & Lumen specific with changed public path
-public_html/storage
-public_html/hot
-
-# Laravel 5 & Lumen specific with changed public path
-public_html/public/storage
-public_html/public/hot
-
-# Environment
+# Environment files
 .env
-.env.backup
-.phpunit.result.cache
-Homestead.yaml
-Homestead.json
-/.vagrant
-.phpunit.result.cache
-
-# IDE specific files
-.idea
-.vscode
-*.sublime-project
-*.sublime-workspace
-.DS_Store
-Thumbs.db
-
-# Composer
-/composer.lock
-/composer.phar
-/vendor/
+.env.*
+!.env.example
 
 # Testing
-/coverage
-.phpunit.cache
+/coverage/
+.phpunit.cache/
+.phpunit.result.cache
 
-# Local development
-.docker
-.docker-sync
-.ddev/
-
-# Database
+# Database files (for testing)
+database/database.sqlite
 *.sqlite
 *.sqlite-journal
 *.sqlite3
 
-# Debug
-.php_cs.cache
-.php_cs.cache.*
-
-# Build
-dist/
-build/
-
-# IDE specific files
+# IDE files
 .idea/
 .vscode/
 *.sublime-project
@@ -78,3 +32,18 @@ build/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Build artifacts
+/build/
+/dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache files
+.php_cs.cache
+.php_cs.cache.*
+.php-cs-fixer.cache
