@@ -141,7 +141,7 @@ class ProductSalesTest extends TestCase
         $this->arLedger = Ledger::create(['name' => 'Accounts Receivable', 'type' => 'asset']);
         $this->inventoryLedger = Ledger::create(['name' => 'Inventory', 'type' => 'asset']);
         $this->cogsLedger = Ledger::create(['name' => 'Cost of Goods Sold', 'type' => 'expense']);
-        $this->salesLedger = Ledger::create(['name' => 'Sales Revenue', 'type' => 'income']);
+        $this->salesLedger = Ledger::create(['name' => 'Sales Revenue', 'type' => 'revenue']);
         $this->taxPayableLedger = Ledger::create(['name' => 'Sales Tax Payable', 'type' => 'liability']);
         
         // Initialize journals for each ledger

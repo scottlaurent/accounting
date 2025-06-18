@@ -39,9 +39,11 @@ class Ledger extends Model
     public function getCurrentBalance(string $currency): Money
     {
         $balance = match ($this->type) {
-            LedgerType::ASSET, LedgerType::EXPENSE => 
+            LedgerType::ASSET, 
+            LedgerType::EXPENSE,
+            LedgerType::LOSS => 
                 $this->journalTransactions->sum('debit') - $this->journalTransactions->sum('credit'),
-            default => 
+            default => // LIABILITY, EQUITY, REVENUE, GAIN
                 $this->journalTransactions->sum('credit') - $this->journalTransactions->sum('debit'),
         };
         

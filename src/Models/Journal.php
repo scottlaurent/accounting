@@ -167,10 +167,17 @@ class Journal extends Model
 
     public function getBalance(): Money
     {
-        $balance = $this->transactions()->exists()
-            ? $this->transactions()->sum('debit') - $this->transactions()->sum('credit')
-            : 0;
-
+        if (!$this->transactions()->exists()) {
+            return new Money(0, new Currency($this->currency));
+        }
+        
+        $debitTotal = $this->transactions()->sum('debit');
+        $creditTotal = $this->transactions()->sum('credit');
+        
+        // Standard accounting: balance = debits - credits
+        // This matches the test expectations where debits are positive and credits are negative
+        $balance = $debitTotal - $creditTotal;
+            
         return new Money($balance, new Currency($this->currency));
     }
 
