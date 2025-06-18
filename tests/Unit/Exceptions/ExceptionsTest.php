@@ -14,6 +14,23 @@ use Scottlaurent\Accounting\Exceptions\TransactionCouldNotBeProcessed;
 
 class ExceptionsTest extends TestCase
 {
+    public function test_missing_exception_classes_coverage(): void
+    {
+        // Test the remaining exception classes that might not be covered
+        $invalidEntryException = new InvalidJournalEntryValue();
+        $invalidMethodException = new InvalidJournalMethod();
+
+        $this->assertInstanceOf(\Exception::class, $invalidEntryException);
+        $this->assertInstanceOf(\Exception::class, $invalidMethodException);
+
+        // Test with custom messages
+        $customEntryException = new InvalidJournalEntryValue('Custom entry message');
+        $customMethodException = new InvalidJournalMethod('Custom method message');
+
+        $this->assertEquals('Custom entry message', $customEntryException->getMessage());
+        $this->assertEquals('Custom method message', $customMethodException->getMessage());
+    }
+
     public function test_base_exception_with_custom_message(): void
     {
         $exception = new BaseException('Custom error message');
@@ -94,4 +111,32 @@ class ExceptionsTest extends TestCase
         $this->assertEquals($expectedMessage, $exception->getMessage());
         $this->assertInstanceOf(BaseException::class, $exception);
     }
+
+    public function test_invalid_journal_entry_value_exception_coverage(): void
+    {
+        // Test the exception class to ensure it's covered
+        $exception = new InvalidJournalEntryValue();
+
+        $this->assertEquals('Journal transaction entries must be a positive value', $exception->getMessage());
+        $this->assertInstanceOf(\Scottlaurent\Accounting\Exceptions\BaseException::class, $exception);
+    }
+
+    public function test_invalid_journal_method_exception_coverage(): void
+    {
+        // Test the exception class to ensure it's covered
+        $exception = new InvalidJournalMethod();
+
+        $this->assertEquals('Journal methods must be credit or debit', $exception->getMessage());
+        $this->assertInstanceOf(\Scottlaurent\Accounting\Exceptions\BaseException::class, $exception);
+    }
+
+    public function test_journal_already_exists_exception_coverage(): void
+    {
+        // Test the exception class to ensure it's covered
+        $exception = new JournalAlreadyExists();
+
+        $this->assertEquals('Journal already exists.', $exception->getMessage());
+        $this->assertInstanceOf(\Scottlaurent\Accounting\Exceptions\BaseException::class, $exception);
+    }
+
 }
