@@ -68,20 +68,20 @@ class DateTimeEdgeCaseTest extends TestCase
             $transaction = new Transaction();
             // Debit the test journal (increases asset balance) - pass post_date as 6th parameter
             $transaction->addDollarTransaction(
-                journal: $journal, 
-                method: 'debit', 
-                value: $case['amount'] / 100, 
+                journal: $journal,
+                method: 'debit',
+                value: $case['amount'] / 100,
                 memo: $case['desc'],
-                referenced_object: null, // No reference object
+                referencedObject: null, // No reference object
                 postdate: $case['date']
             );
             // Credit the offset journal (e.g., a liability)
             $transaction->addDollarTransaction(
-                journal: $offsetJournal, 
-                method: 'credit', 
-                value: $case['amount'] / 100, 
+                journal: $offsetJournal,
+                method: 'credit',
+                value: $case['amount'] / 100,
                 memo: 'Offset for: ' . $case['desc'],
-                referenced_object: null, // No reference object
+                referencedObject: null, // No reference object
                 postdate: $case['date']
             );
             $transaction->commit();

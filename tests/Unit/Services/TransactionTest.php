@@ -279,13 +279,13 @@ class TransactionTest extends TestCase
         $this->assertArrayHasKey('money', $pendingTransaction);
         $this->assertArrayHasKey('memo', $pendingTransaction);
         $this->assertArrayHasKey('postdate', $pendingTransaction);
-        $this->assertArrayHasKey('referenced_object', $pendingTransaction);
-        
+        $this->assertArrayHasKey('referencedObject', $pendingTransaction);
+
         $this->assertTrue($pendingTransaction['journal']->is($journal));
         $this->assertEquals('credit', $pendingTransaction['method']);
         $this->assertEquals(3000, $pendingTransaction['money']->getAmount());
         $this->assertEquals('Structured test', $pendingTransaction['memo']);
         $this->assertEquals($postDate, $pendingTransaction['postdate']);
-        $this->assertTrue($pendingTransaction['referenced_object']->is($referenceObject));
+        $this->assertTrue($pendingTransaction['referencedObject']->is($referenceObject));
     }
 }

@@ -19,7 +19,7 @@ use Ramsey\Uuid\Uuid;
 
 class Transaction
 {
-    protected array $transactions_pending = [];
+    protected array $transactionsPending = [];
 
     public static function newDoubleEntryTransactionGroup(): self
     {
@@ -31,7 +31,7 @@ class Transaction
         string $method,
         Money $money,
         ?string $memo = null,
-        mixed $referenced_object = null,
+        mixed $referencedObject = null,
         ?Carbon $postdate = null
     ): void {
         if (!in_array($method, ['credit', 'debit'], true)) {
@@ -42,12 +42,12 @@ class Transaction
             throw new InvalidJournalEntryValue();
         }
 
-        $this->transactions_pending[] = [
+        $this->transactionsPending[] = [
             'journal' => $journal,
             'method' => $method,
             'money' => $money,
             'memo' => $memo,
-            'referenced_object' => $referenced_object,
+            'referencedObject' => $referencedObject,
             'postdate' => $postdate
         ];
     }
@@ -57,36 +57,36 @@ class Transaction
         string $method,
         float|int|string $value,
         ?string $memo = null,
-        mixed $referenced_object = null,
+        mixed $referencedObject = null,
         ?Carbon $postdate = null
     ): void {
-        $value = (int)($value * 100);
+        $value = (int) ($value * 100);
         $money = new Money($value, new Currency('USD'));
-        $this->addTransaction($journal, $method, $money, $memo, $referenced_object, $postdate);
+        $this->addTransaction($journal, $method, $money, $memo, $referencedObject, $postdate);
     }
 
     public function getTransactionsPending(): array
     {
-        return $this->transactions_pending;
+        return $this->transactionsPending;
     }
 
     public function commit(): string
     {
         $this->verifyTransactionCreditsEqualDebits();
-        
+
         try {
             $transactionGroupUUID = Uuid::uuid4()->toString();
             DB::beginTransaction();
 
-            foreach ($this->transactions_pending as $transaction_pending) {
-                $transaction = $transaction_pending['journal']->{$transaction_pending['method']}(
-                    $transaction_pending['money'],
-                    $transaction_pending['memo'],
-                    $transaction_pending['postdate'],
+            foreach ($this->transactionsPending as $transactionPending) {
+                $transaction = $transactionPending['journal']->{$transactionPending['method']}(
+                    $transactionPending['money'],
+                    $transactionPending['memo'],
+                    $transactionPending['postdate'],
                     $transactionGroupUUID
                 );
-                
-                if ($object = $transaction_pending['referenced_object']) {
+
+                if ($object = $transactionPending['referencedObject']) {
                     $transaction->referencesObject($object);
                 }
             }
@@ -107,11 +107,11 @@ class Transaction
         $credits = 0;
         $debits = 0;
 
-        foreach ($this->transactions_pending as $transaction_pending) {
-            if ($transaction_pending['method'] === 'credit') {
-                $credits += $transaction_pending['money']->getAmount();
+        foreach ($this->transactionsPending as $transactionPending) {
+            if ($transactionPending['method'] === 'credit') {
+                $credits += $transactionPending['money']->getAmount();
             } else {
-                $debits += $transaction_pending['money']->getAmount();
+                $debits += $transactionPending['money']->getAmount();
             }
         }
 

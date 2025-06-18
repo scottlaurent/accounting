@@ -95,14 +95,14 @@ class Journal extends Model
 
     protected function getBalanceAttribute(mixed $value): Money
     {
-        return new Money((int)$value, new Currency($this->currency));
+        return new Money((int) $value, new Currency($this->currency));
     }
 
     protected function setBalanceAttribute(mixed $value): void
     {
         // If value is a Money object, extract amount and currency
         if ($value instanceof Money) {
-            $this->attributes['balance'] = (int)$value->getAmount();
+            $this->attributes['balance'] = (int) $value->getAmount();
             $this->currency = $value->getCurrency()->getCode();
             return;
         }
@@ -113,10 +113,10 @@ class Journal extends Model
         }
 
         // Handle both string and numeric values
-        $amount = is_numeric($value) ? (int)$value : 0;
+        $amount = is_numeric($value) ? (int) $value : 0;
         $money = new Money($amount, new Currency($this->currency));
 
-        $this->attributes['balance'] = (int)$money->getAmount();
+        $this->attributes['balance'] = (int) $money->getAmount();
     }
 
     public function getDebitBalanceOn(Carbon $date): Money
@@ -185,43 +185,43 @@ class Journal extends Model
     public function credit(
         mixed $value,
         ?string $memo = null,
-        ?Carbon $post_date = null,
-        ?string $transaction_group = null
+        ?Carbon $postDate = null,
+        ?string $transactionGroup = null
     ): JournalTransaction {
         $value = $value instanceof Money
             ? $value
             : new Money($value, new Currency($this->currency));
 
-        return $this->post($value, null, $memo, $post_date, $transaction_group);
+        return $this->post($value, null, $memo, $postDate, $transactionGroup);
     }
 
     public function debit(
         mixed $value,
         ?string $memo = null,
-        ?Carbon $post_date = null,
-        ?string $transaction_group = null
+        ?Carbon $postDate = null,
+        ?string $transactionGroup = null
     ): JournalTransaction {
         $value = $value instanceof Money
             ? $value
             : new Money($value, new Currency($this->currency));
 
-        return $this->post(null, $value, $memo, $post_date, $transaction_group);
+        return $this->post(null, $value, $memo, $postDate, $transactionGroup);
     }
 
     public function creditDollars(
         float $value,
         ?string $memo = null,
-        ?Carbon $post_date = null
+        ?Carbon $postDate = null
     ): JournalTransaction {
-        return $this->credit((int)($value * 100), $memo, $post_date);
+        return $this->credit((int) ($value * 100), $memo, $postDate);
     }
 
     public function debitDollars(
         float $value,
         ?string $memo = null,
-        ?Carbon $post_date = null
+        ?Carbon $postDate = null
     ): JournalTransaction {
-        return $this->debit((int)($value * 100), $memo, $post_date);
+        return $this->debit((int) ($value * 100), $memo, $postDate);
     }
 
     public function getDollarsDebitedToday(): float
@@ -258,8 +258,8 @@ class Journal extends Model
         ?Money $credit = null,
         ?Money $debit = null,
         ?string $memo = null,
-        ?Carbon $post_date = null,
-        ?string $transaction_group = null
+        ?Carbon $postDate = null,
+        ?string $transactionGroup = null
     ): JournalTransaction {
         $currencyCode = ($credit ?? $debit)->getCurrency()->getCode();
 
@@ -269,8 +269,8 @@ class Journal extends Model
             'debit' => $debit?->getAmount(),
             'memo' => $memo,
             'currency' => $currencyCode,
-            'post_date' => $post_date ?? Carbon::now(),
-            'transaction_group' => $transaction_group,
+            'post_date' => $postDate ?? Carbon::now(),
+            'transaction_group' => $transactionGroup,
         ]);
 
         // Update the journal's balance

@@ -103,14 +103,14 @@ class TransactionAdditionalTest extends TestCase
         $this->assertEquals('credit', $pending[0]['method']);
         $this->assertEquals(2000, $pending[0]['money']->getAmount());
         $this->assertEquals('Full parameter test', $pending[0]['memo']);
-        $this->assertTrue($pending[0]['referenced_object']->is($referenceJournal));
+        $this->assertTrue($pending[0]['referencedObject']->is($referenceJournal));
         $this->assertEquals($postDate, $pending[0]['postdate']);
     }
 
     public function test_add_dollar_transaction_with_all_parameters(): void
     {
         $transaction = Transaction::newDoubleEntryTransactionGroup();
-        
+
         $journal = Journal::create([
             'currency' => 'USD',
             'morphed_type' => 'test',
@@ -122,9 +122,9 @@ class TransactionAdditionalTest extends TestCase
             'morphed_type' => 'test',
             'morphed_id' => 2,
         ]);
-        
+
         $postDate = Carbon::now()->subDays(2);
-        
+
         // Test addDollarTransaction with all parameters
         $transaction->addDollarTransaction(
             $journal,
@@ -134,14 +134,14 @@ class TransactionAdditionalTest extends TestCase
             $referenceJournal,
             $postDate
         );
-        
+
         $pending = $transaction->getTransactionsPending();
-        
+
         $this->assertCount(1, $pending);
         $this->assertEquals('debit', $pending[0]['method']);
         $this->assertEquals(4567, $pending[0]['money']->getAmount()); // $45.67 = 4567 cents
         $this->assertEquals('Dollar transaction with all params', $pending[0]['memo']);
-        $this->assertTrue($pending[0]['referenced_object']->is($referenceJournal));
+        $this->assertTrue($pending[0]['referencedObject']->is($referenceJournal));
         $this->assertEquals($postDate, $pending[0]['postdate']);
     }
 }
