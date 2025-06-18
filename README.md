@@ -53,7 +53,7 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 - [License](#license)
 
 
-## <a name="installation"></a>Installation
+## Installation
 
 1) run composer require "scottlaurent/accounting"
 
@@ -64,7 +64,7 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 4) ** most of the time you will want to add the $model->initJournal() into the static::created() method of your model so that a journal is created when you create the model object itself.
 
 
-## <a name="sign-convention"></a>Sign Convention
+## Sign Convention
 
 This package uses the following sign convention for accounting entries:
 
@@ -77,7 +77,7 @@ For example:
 - Debiting an asset account (like Cash) will make the balance more negative
 - Crediting a revenue account will make the balance more positive
 
-## <a name="code-sample"></a>Code Sample
+## Code Sample
 
 ```php
 // locate a user (or ANY MODEL that implements the AccountingJournal trait)
@@ -110,7 +110,7 @@ $productCopy = $transactionOne->getReferencedObject();
 
 ##### see /tests for more examples.
 
-## <a name="how-it-works"></a>How it works
+## How It Works
 
 1) The trait includes functions to a) initialize a new journal for your model object and b) to return that journal.
 
@@ -119,7 +119,7 @@ $productCopy = $transactionOne->getReferencedObject();
 3) IMPORTANT: The accounting system uses the Money PHP class which deals with indivisible currency.  For example, the indivisible currency of USD is the penny.  So $1 is really Money 100 USD.  This prevents loss of currency by division/rounding errors.
 
 
-### <a name="usage-examples"></a>Usage Examples
+## Usage Examples
 
 1. SCENARIO A - VERY SIMPLE CASE - You are providing an API Service. Each API hit from a user costs 5 cents. You don't care about double-entry accounting.
 
@@ -325,9 +325,3 @@ This package is open-sourced software licensed under the [MIT license](https://o
 ---
 
 It's been my experience, in practice, that keeping the 5 basic ledger types, some initial company journals, and then adding a journal for users and sometimes vendor journals assigned to the expense ledger keeps things pretty simple.  Anything more complex usually winds up being migrated eventually into a financial system, or in some cases, just synced.
-
-   
- 
-## <a name="license"></a>License
-
-Free software distributed under the terms of the MIT license.
