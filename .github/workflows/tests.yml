@@ -81,11 +81,16 @@ jobs:
     - name: Execute tests
       run: vendor/bin/phpunit --testdox --coverage-text
 
+    - name: Generate coverage report
+      if: matrix.php == '8.2' && matrix.laravel == '12.*'
+      run: vendor/bin/phpunit --coverage-clover=coverage.xml
+
     - name: Upload coverage to Codecov
       if: matrix.php == '8.2' && matrix.laravel == '12.*'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
