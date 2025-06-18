@@ -15,7 +15,7 @@ use Scottlaurent\Accounting\Exceptions\{
     TransactionCouldNotBeProcessed
 };
 use Illuminate\Support\Facades\DB;
-use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Str;
 
 class Transaction
 {
@@ -75,7 +75,7 @@ class Transaction
         $this->verifyTransactionCreditsEqualDebits();
 
         try {
-            $transactionGroupUUID = Uuid::uuid4()->toString();
+            $transactionGroupUUID = Str::uuid()->toString();
             DB::beginTransaction();
 
             foreach ($this->transactionsPending as $transactionPending) {

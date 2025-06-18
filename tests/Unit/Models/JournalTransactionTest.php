@@ -9,7 +9,7 @@ use Scottlaurent\Accounting\Models\Journal;
 use Scottlaurent\Accounting\Models\Ledger;
 use Scottlaurent\Accounting\Enums\LedgerType;
 use Scottlaurent\Accounting\Models\JournalTransaction;
-use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Str;
 
 class JournalTransactionTest extends TestCase
 {
@@ -172,7 +172,7 @@ class JournalTransactionTest extends TestCase
 
         // After save, UUID should be generated as ID
         $this->assertNotNull($transaction->id);
-        $this->assertTrue(Uuid::isValid($transaction->id));
+        $this->assertTrue(Str::isUuid($transaction->id));
     }
 
     public function test_set_currency_method(): void

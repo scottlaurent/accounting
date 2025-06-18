@@ -7,7 +7,7 @@ namespace Tests\Unit\Services;
 use Carbon\Carbon;
 use Money\Money;
 use Money\Currency;
-use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Str;
 use Scottlaurent\Accounting\Models\Journal;
 use Scottlaurent\Accounting\Models\JournalTransaction;
 use Scottlaurent\Accounting\Transaction;
@@ -164,7 +164,7 @@ class TransactionTest extends TestCase
         $transactionGroupId = $transaction->commit();
         
         // Verify transaction group ID is a valid UUID
-        $this->assertTrue(Uuid::isValid($transactionGroupId));
+        $this->assertTrue(Str::isUuid($transactionGroupId));
         
         // Refresh journals to get updated balances
         $journal1->refresh();

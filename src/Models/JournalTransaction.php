@@ -6,7 +6,7 @@ namespace Scottlaurent\Accounting\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Str;
 
 class JournalTransaction extends Model
 {
@@ -42,7 +42,7 @@ class JournalTransaction extends Model
         parent::boot();
         
         static::creating(function (self $transaction): void {
-            $transaction->id = Uuid::uuid4()->toString();
+            $transaction->id = Str::uuid()->toString();
         });
         
         static::deleted(function (self $transaction): void {

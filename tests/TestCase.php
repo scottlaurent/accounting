@@ -31,49 +31,8 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        // Ensure the migrations table exists
-        $this->createMigrationsTable();
-        
+
         // Load and run migrations
-        $migrationPaths = [
-            __DIR__ . '/../src/migrations',
-        ];
-        
-        foreach ($migrationPaths as $path) {
-            $this->loadMigrationsFrom($path);
-        }
-        
-        // Run migrations for the test database
-        $this->artisan('migrate:fresh', [
-            '--database' => 'testbench',
-            '--path' => 'src/migrations',
-            '--realpath' => true,
-        ]);
-    }
-    
-    protected function createMigrationsTable(): void
-    {
-        if (!\Schema::hasTable('migrations')) {
-            $migration = new class extends \Illuminate\Database\Migrations\Migration {
-                public function up(): void
-                {
-                    $schema = app('db')->connection()->getSchemaBuilder();
-                    $schema->create('migrations', function (\Illuminate\Database\Schema\Blueprint $table) {
-                        $table->increments('id');
-                        $table->string('migration');
-                        $table->integer('batch');
-                    });
-                }
-                
-                public function down(): void
-                {
-                    $schema = app('db')->connection()->getSchemaBuilder();
-                    $schema->dropIfExists('migrations');
-                }
-            };
-            
-            $migration->up();
-        }
+        $this->loadMigrationsFrom(__DIR__ . '/../src/migrations');
     }
 }
