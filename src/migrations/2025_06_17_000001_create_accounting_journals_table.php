@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateAccountingJournalsTable extends Migration
+return new class extends Migration
 {
     public function up(): void
     {
@@ -30,4 +28,4 @@ class CreateAccountingJournalsTable extends Migration
     {
         Schema::dropIfExists('accounting_journals');
     }
-}
+};

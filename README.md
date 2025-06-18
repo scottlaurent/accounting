@@ -49,7 +49,7 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 - [Installation](#installation)
 - [How It Works](#how-it-works)
 - [Code Sample](#code-sample)
-- [Usage Examples](#usage)
+- [Usage Examples](#usage-examples)
 - [License](#license)
 
 

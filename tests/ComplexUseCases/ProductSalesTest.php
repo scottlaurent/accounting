@@ -77,6 +77,20 @@ class Payment extends Model
 
 class ProductSalesTest extends TestCase
 {
+    protected Ledger $cashLedger;
+    protected Ledger $arLedger;
+    protected Ledger $inventoryLedger;
+    protected Ledger $cogsLedger;
+    protected Ledger $salesLedger;
+    protected Ledger $taxPayableLedger;
+
+    protected Journal $cashJournal;
+    protected Journal $arJournal;
+    protected Journal $inventoryJournal;
+    protected Journal $cogsJournal;
+    protected Journal $salesJournal;
+    protected Journal $taxPayableJournal;
+
     protected function setUp(): void
     {
         parent::setUp();
