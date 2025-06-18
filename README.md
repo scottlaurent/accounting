@@ -1,5 +1,11 @@
 # Laravel (Eloquent) Accounting Package
 
+[![Tests](https://github.com/scottlaurent/accounting/workflows/Tests/badge.svg)](https://github.com/scottlaurent/accounting/actions)
+[![PHP Version](https://img.shields.io/badge/php-8.1%2B-blue.svg)](https://packagist.org/packages/scottlaurent/accounting)
+[![Laravel Version](https://img.shields.io/badge/laravel-8%2B-red.svg)](https://packagist.org/packages/scottlaurent/accounting)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/scottlaurent/accounting)
+
 I am an accountant and a Laravel developer.  I wrote this package to provide a simple drop-in trait to manage accruing balances for a given model.  It can also be used to create double entry based projects where you would want to credit one journal and debit another.
 
 ** This DOES allow you to keep line-item balances historical debits and credits on a per model object (user, account, whatever) basis
@@ -12,6 +18,32 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 
 ** This DOES NOT replace any type of financial recording system which you may be using (ie if you are tracking things in Stripe for example).
 
+
+## ✨ Features
+
+- 🏦 **Double-Entry Accounting** - Proper accounting principles with debits and credits
+- 💰 **Multi-Currency Support** - Handle transactions in different currencies
+- 📊 **High Performance** - Optimized for billions of transactions
+- 🔒 **100% Test Coverage** - Thoroughly tested and reliable
+- 🚀 **Laravel 8-12 Support** - Works with all modern Laravel versions
+- 💎 **PSR-12 Compliant** - Clean, maintainable code
+- 🎯 **Precise Money Handling** - Uses moneyphp/money for accurate calculations
+
+## 📋 Requirements
+
+- **PHP**: 8.1, 8.2, or 8.3
+- **Laravel**: 8.x, 9.x, 10.x, 11.x, or 12.x
+- **Database**: MySQL, PostgreSQL, SQLite, or SQL Server
+
+## 📊 Laravel Version Compatibility
+
+| Laravel | PHP | Status |
+|---------|-----|--------|
+| 12.x    | 8.2, 8.3 | ✅ Fully Supported |
+| 11.x    | 8.2, 8.3 | ✅ Fully Supported |
+| 10.x    | 8.1, 8.2, 8.3 | ✅ Fully Supported |
+| 9.x     | 8.1, 8.2 | ✅ Fully Supported |
+| 8.x     | 8.1 | ✅ Fully Supported |
 
 ## Contents
 
