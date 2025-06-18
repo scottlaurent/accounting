@@ -23,7 +23,6 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 
 - 🏦 **Double-Entry Accounting** - Proper accounting principles with debits and credits
 - 💰 **Multi-Currency Support** - Handle transactions in different currencies
-- 📊 **High Performance** - Optimized for billions of transactions
 - 🔒 **100% Test Coverage** - Thoroughly tested and reliable
 - 🚀 **Laravel 8-12 Support** - Works with all modern Laravel versions
 - 💎 **PSR-12 Compliant** - Clean, maintainable code
@@ -64,14 +63,6 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 
 4) ** most of the time you will want to add the $model->initJournal() into the static::created() method of your model so that a journal is created when you create the model object itself.
 
-5) If using double entry, add the following to your `config/app.php` service providers:
-
-```php
-Scottlaurent\Accounting\Providers\AccountingServiceProvider::class,
-```
-
-This will register the `Transaction` facade and bindings needed for double-entry accounting.
-
 
 ## <a name="sign-convention"></a>Sign Convention
 
@@ -89,34 +80,32 @@ For example:
 ## <a name="code-sample"></a>Code Sample
 
 ```php
+// locate a user (or ANY MODEL that implements the AccountingJournal trait)
+$user = User::find(1);
 
-    // locate a user (or ANY MODEL that implementes the AccountingJournal trait)
-    $user = User::find(1);
-    
-    // locate a product (optional)
-    $product = Product::find(1)
-    
-    // init a journal for this user (do this only once)
-    $user->initJournal();
-    
-    // credit the user and reference the product
-    $transaction_1 = $user->journal->creditDollars(100);
-    $transaction_1->referencesObject($product);
-    
-    // check our balance (should be 100)
-    // Note: getCurrentBalanceInDollars() will return a positive number for credit balances
-    $current_balance = $user->journal->getCurrentBalanceInDollars();
-    
-    // debit the user 
-    $transaction_2 = $user->journal->debitDollars(75);
-    
-    // check our balance (should be 25)
-    // The balance will be positive if credits > debits, negative if debits > credits
-    $current_balance = $user->journal->getCurrentBalanceInDollars();
-    
-    //get the product referenced in the journal (optional)
-    $product_copy = $transaction_1->getReferencedObject()
-    
+// locate a product (optional)
+$product = Product::find(1);
+
+// init a journal for this user (do this only once)
+$user->initJournal();
+
+// credit the user and reference the product
+$transactionOne = $user->journal->creditDollars(100);
+$transactionOne->referencesObject($product);
+
+// check our balance (should be 100)
+// Note: getCurrentBalanceInDollars() will return a positive number for credit balances
+$currentBalance = $user->journal->getCurrentBalanceInDollars();
+
+// debit the user
+$transactionTwo = $user->journal->debitDollars(75);
+
+// check our balance (should be 25)
+// The balance will be positive if credits > debits, negative if debits > credits
+$currentBalance = $user->journal->getCurrentBalanceInDollars();
+
+// get the product referenced in the journal (optional)
+$productCopy = $transactionOne->getReferencedObject();
 ```
 
 ##### see /tests for more examples.
@@ -176,54 +165,144 @@ For example:
 
 4. SCENARIO D - Advanced: Product Sales with Inventory and COGS
 
-    For a complete example of handling product sales with inventory management, cost of goods sold (COGS), and different payment methods, see the `ProductSalesTest` class in the `tests/ComplexUseCases` directory.
+    For a complete example of handling product sales with inventory management, cost of goods sold (COGS), and different payment methods, see the [ProductSalesTest](tests/ComplexUseCases/ProductSalesTest.php) class in the `tests/ComplexUseCases` directory.
+
+    For a comprehensive financial scenario demonstrating all ledger types (Assets, Liabilities, Equity, Revenue, Expenses, Gains, Losses) with proper closing entries, see the [CompanyFinancialScenarioTest](tests/ComplexUseCases/CompanyFinancialScenarioTest.php) class.
    
    a. Run the migrations.  Then look in the tests/BaseTest setUpCompanyLedgersAndJournals() code.  Notice where 5 basic ledgers are created.  Using this as an example, create the ledgers you will be using.  You can stick with those 5 or you can make a full blown chart of accounts, just make sure that each legder entry is assigned to one of the 5 enums (income, expense, asset, liability, equity)
    
    b. You will need multiple company jounrals at this point.  If you look at the test migration create_company_journals_table, it is a simple table that allows you to add journals for no other purpose than to record transactions.
      
-   c. Each journal that is created, whether it's a user journal, or a cash journal you crete in your journals table, you will want to assign the journal to a ledger.  $user->journal->assignToLedger($this->company_income_ledger);
+   c. Each journal that is created, whether it's a user journal, or a cash journal you create in your journals table, you will want to assign the journal to a ledger.  $user->journal->assignToLedger($this->companyIncomeLedger);
    
    d. To process a double entry transaction, do something like this:
    
+    ```php
+    // this represents some kind of sale to a customer for $500 based on an invoiced amount of 500.
+    $transactionGroup = Transaction::newDoubleEntryTransactionGroup();
+    $transactionGroup->addDollarTransaction($user->journal, 'credit', 500);  // your user journal probably is an income ledger
+    $transactionGroup->addDollarTransaction($this->companyAccountsReceivableJournal, 'debit', 500); // this is an asset ledger
+    $transactionGroup->commit();
     ```
-            // this represents some kind of sale to a customer for $500 based on an invoiced ammount of 500.
-            $transaction_group = AccountingService::newDoubleEntryTransactionGroup();
-            $transaction_group->addDollarTransaction($user->journal,'credit',500);  // your user journal probably is an income ledger
-            $transaction_group->addDollarTransaction($this->company_accounts_receivable_journal,'debit',500); // this is an asset ledder
-            $transaction_group->commit();
-    
-    ```
-    
-    ```
-            // this represents payment in cash to satisy that AR entry
-            $transaction_group = AccountingService::newDoubleEntryTransactionGroup();
-            $transaction_group->addDollarTransaction($this->company_accounts_receivable_journal,'debit',500);
-            $transaction_group->addDollarTransaction($this->company_cash_journal,'credit',500);
-            $transaction_group->commit();
-            
-            // at this point, our assets are 500 still and our income is 500.  If you review the code you will notice that assets and expenses are on the 'left' side of a balance sheet rollup and the liabilities and owners equity (and income) are rolled up on the right.  In that way, the left and right always stay in sync.  You could do an adjustment transaction of course to zero out expenses/income and transfer that to equity or however you do year-end or period-end clearances on your income/expense ledgers.
-    
+
+    ```php
+    // this represents payment in cash to satisfy that AR entry
+    $transactionGroup = Transaction::newDoubleEntryTransactionGroup();
+    $transactionGroup->addDollarTransaction($this->companyAccountsReceivableJournal, 'credit', 500);
+    $transactionGroup->addDollarTransaction($this->companyCashJournal, 'debit', 500);
+    $transactionGroup->commit();
+
+    // at this point, our assets are 500 still and our income is 500.  If you review the code you will notice that assets and expenses are on the 'left' side of a balance sheet rollup and the liabilities and owners equity (and income) are rolled up on the right.  In that way, the left and right always stay in sync.  You could do an adjustment transaction of course to zero out expenses/income and transfer that to equity or however you do year-end or period-end clearances on your income/expense ledgers.
     ```
     
     e. Finally note that add up all of your $ledger model objects of type asset/expense then that will always be 100% equal to the sum of the $ledger liability/equity/income objects.
     
-    f. Note that the $transaction_group->addDollarTransaction() allows you to add as many transactions as you want, into the batch, but the sum of ledger-type journals for the assets/expenses must equal that of the income/liability/equity types.  This is a fundamental requirement of accounting and is enforced here.  But again, remember that you don't have to use ledgers in the first place if you don't want to.  
-    
-    g. the unit tests really play out a couple complex scenarios.  They simulate about 1000 transactions, each simulating a $1-$10million purchase, split between cash and AR, and then checks the fundamental accounting equation at the end of all of this.
+    f. Note that the $transactionGroup->addDollarTransaction() allows you to add as many transactions as you want, into the batch, but the sum of ledger-type journals for the assets/expenses must equal that of the income/liability/equity types.  This is a fundamental requirement of accounting and is enforced here.  But again, remember that you don't have to use ledgers in the first place if you don't want to.
 
-## Testing
+## 🧪 Testing
+
+### Running Tests
 
 To run the test suite:
 
 ```bash
-composer test
+# Run all tests with coverage
+make test
+
+# Test specific Laravel version locally
+./test-versions.sh 11
+
+# Test all Laravel versions (8-12)
+./test-versions.sh
 ```
 
-Or using the provided Makefile:
+### Complex Use Cases
 
-```bash
-make test
+The package includes comprehensive test scenarios demonstrating real-world accounting implementations:
+
+#### 📦 [Product Sales Scenario](tests/ComplexUseCases/ProductSalesTest.php)
+- Complete product sales workflow with inventory management
+- Cost of Goods Sold (COGS) calculations
+- Cash and credit payment processing
+- Multi-product transactions
+- Inventory tracking and valuation
+
+#### 🏢 [Company Financial Scenario](tests/ComplexUseCases/CompanyFinancialScenarioTest.php)
+- Full accounting cycle with all ledger types:
+  - **Assets**: Cash, Accounts Receivable, Inventory, Equipment
+  - **Liabilities**: Accounts Payable, Loans Payable
+  - **Equity**: Common Stock, Retained Earnings
+  - **Revenue**: Product Sales, Service Revenue
+  - **Expenses**: COGS, Salaries, Rent, Utilities, Depreciation
+  - **Gains/Losses**: Asset sales, inventory shrinkage
+- Period-end closing entries
+- Financial statement preparation
+- Accounting equation validation
+
+These test cases serve as documentation and examples for implementing complex accounting scenarios in your applications.
+
+## 📚 API Reference
+
+### Journal Operations
+
+```php
+// Basic operations
+$journal->debit(5000, 'Equipment purchase');           // Amount in cents
+$journal->credit(2500, 'Payment received');            // Amount in cents
+
+// Dollar convenience methods (recommended)
+$journal->debitDollars(50.00, 'Office supplies');      // Amount in dollars
+$journal->creditDollars(25.00, 'Refund issued');       // Amount in dollars
+
+// Get balances
+$currentBalance = $journal->getBalance();               // Money object
+$dollarBalance = $journal->getBalanceInDollars();       // Float
+$balanceOnDate = $journal->getBalanceOn($date);         // Money object
+
+// Daily totals
+$debitedToday = $journal->getDollarsDebitedToday();     // Float
+$creditedToday = $journal->getDollarsCreditedToday();   // Float
+```
+
+### Transaction Operations
+
+```php
+use Scottlaurent\Accounting\Transaction;
+
+// Create transaction group
+$transaction = Transaction::newDoubleEntryTransactionGroup();
+
+// Add transactions with proper camelCase parameters
+$transaction->addDollarTransaction(
+    journal: $journal,
+    method: 'debit',
+    value: 100.00,
+    memo: 'Transaction description',
+    referencedObject: $product,  // Optional reference
+    postdate: Carbon::now()      // Optional date
+);
+
+// Commit (validates debits = credits)
+$transactionGroupId = $transaction->commit();
+```
+
+### Ledger Management
+
+```php
+use Scottlaurent\Accounting\Models\Ledger;
+use Scottlaurent\Accounting\Enums\LedgerType;
+
+// Create ledgers
+$assetLedger = Ledger::create([
+    'name' => 'Current Assets',
+    'type' => LedgerType::ASSET
+]);
+
+// Assign journal to ledger
+$journal->assignToLedger($assetLedger);
+
+// Get ledger balance
+$totalBalance = $assetLedger->getCurrentBalance('USD');
 ```
 
 ## Sign Convention Reminder
@@ -234,39 +313,6 @@ Remember the sign convention used in this package:
 - **Credits are positive**
 
 This is particularly important when working with account balances and writing tests. The test suite includes examples of how to work with this convention.
-
-## Enhancement Recommendations
-
-The following are potential enhancements that could be made to this package in the future:
-
-1. **Standard Sign Convention**
-   - Consider aligning the sign convention with standard accounting practice (positive debits, negative credits)
-   - Add a configuration option to allow users to choose their preferred sign convention
-
-2. **Built-in Reports**
-   - Add support for common financial reports (Trial Balance, Income Statement, Balance Sheet)
-   - Implement built-in period closing functionality
-
-3. **Improved Documentation**
-   - Add more detailed API documentation
-   - Create a comprehensive user guide with common accounting scenarios
-   - Add more code examples for complex use cases
-
-4. **Testing Improvements**
-   - Increase test coverage, especially for edge cases
-   - Add integration tests for common accounting workflows
-   - Implement property-based testing for transaction validation
-
-5. **Performance Optimizations**
-   - Add support for batch transaction processing
-   - Implement caching for frequently accessed journal entries
-   - Optimize balance calculation queries for large datasets
-
-6. **Additional Features**
-   - Support for multi-currency transactions
-   - Budgeting and forecasting capabilities
-   - Tax calculation and reporting
-   - Integration with popular payment gateways
 
 ## Contribution
 
