@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, master, develop, laravel-12-implementation ]
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [ main, master, develop, laravel-12-implementation ]
 
 jobs:
   test:
