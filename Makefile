@@ -1,13 +1,10 @@
-.PHONY: up down build ssh composer test test-coverage test-phpunit test-pest tinker art migrate fresh seed clear key generate install update
+.PHONY: up down build ssh composer test test-coverage test-phpunit install update help
 
 # Project variables
 DOCKER_COMPOSE = docker compose
 DOCKER_COMPOSE_FILE = docker-compose.yml
 DOCKER_SERVICE = app
-PHP = $(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) php
 COMPOSER = $(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) composer
-ARTISAN = $(PHP) artisan
-PHPUNIT = $(PHP) /var/www/vendor/bin/phpunit
 
 ## —— Docker Compose ————————————————————————————————————————————————————————————
 up: ## Start all containers in the background
@@ -56,36 +53,8 @@ open-coverage: test-coverage ## Open the coverage report in default browser
 		echo "Please open coverage/index.html in your browser"; \
 	fi
 
-test-phpunit: ## Run PHPUnit tests
+test-phpunit: ## Run PHPUnit tests with optional arguments
 	$(DOCKER_COMPOSE) run --rm $(DOCKER_SERVICE) bash -c "cd /var/www && ./vendor/bin/phpunit $(filter-out $@,$(MAKECMDGOALS))"
-
-test-pest: ## Run Pest tests
-	@$(PHP) vendor/bin/pest $(filter-out $@,$(MAKECMDGOALS))
-
-## —— Laravel ———————————————————————————————————————————————————————————————————
-tinker: ## Run tinker
-	@$(ARTISAN) tinker
-
-art: ## Run an Artisan command
-	@$(ARTISAN) $(filter-out $@,$(MAKECMDGOALS))
-
-migrate: ## Run database migrations
-	@$(ARTISAN) migrate
-
-fresh: ## Drop all tables and re-run migrations
-	@$(ARTISAN) migrate:fresh
-
-seed: ## Seed the database with records
-	@$(ARTISAN) db:seed
-
-clear: ## Clear all caches
-	@$(ARTISAN) cache:clear
-	@$(ARTISAN) config:clear
-	@$(ARTISAN) route:clear
-	@$(ARTISAN) view:clear
-
-key: ## Generate application key
-	@$(ARTISAN) key:generate
 
 ## —— Help ——————————————————————————————————————————————————————————————————————
 help: ## Display this help screen
@@ -97,7 +66,3 @@ help: ## Display this help screen
 
 %:
 	@:
-
-# This is a workaround for make's handling of command line arguments
-# It allows you to pass additional arguments to commands like `make test --filter=ExampleTest`
-# The empty recipe with `@:` tells make to do nothing for these targets
