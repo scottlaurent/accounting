@@ -139,4 +139,43 @@ class ExceptionsTest extends TestCase
         $this->assertInstanceOf(\Scottlaurent\Accounting\Exceptions\BaseException::class, $exception);
     }
 
+    public function test_config_file_class_coverage(): void
+    {
+        // Test that the config file is loaded and accessible to ensure it's covered
+        $config = include __DIR__ . '/../../../src/config/accounting.php';
+
+        $this->assertIsArray($config);
+        $this->assertArrayHasKey('base_currency', $config);
+        $this->assertEquals('USD', $config['base_currency']);
+    }
+
+    public function test_missing_exception_classes_direct_instantiation(): void
+    {
+        // Test direct instantiation of exception classes that might not be covered
+
+        // Test InvalidJournalEntryValue by throwing and catching
+        try {
+            throw new InvalidJournalEntryValue();
+        } catch (InvalidJournalEntryValue $e) {
+            $this->assertInstanceOf(BaseException::class, $e);
+            $this->assertEquals('Journal transaction entries must be a positive value', $e->getMessage());
+        }
+
+        // Test InvalidJournalMethod by throwing and catching
+        try {
+            throw new InvalidJournalMethod();
+        } catch (InvalidJournalMethod $e) {
+            $this->assertInstanceOf(BaseException::class, $e);
+            $this->assertEquals('Journal methods must be credit or debit', $e->getMessage());
+        }
+
+        // Test JournalAlreadyExists by throwing and catching
+        try {
+            throw new JournalAlreadyExists();
+        } catch (JournalAlreadyExists $e) {
+            $this->assertInstanceOf(BaseException::class, $e);
+            $this->assertEquals('Journal already exists.', $e->getMessage());
+        }
+    }
+
 }
