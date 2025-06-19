@@ -76,7 +76,13 @@ jobs:
         composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress
 
     - name: List Installed Dependencies
-      run: composer show laravel/framework orchestra/testbench phpunit/phpunit
+      run: |
+        echo "Laravel Framework:"
+        composer show laravel/framework
+        echo "Orchestra Testbench:"
+        composer show orchestra/testbench
+        echo "PHPUnit:"
+        composer show phpunit/phpunit
 
     - name: Execute tests
       run: vendor/bin/phpunit --testdox --coverage-text
