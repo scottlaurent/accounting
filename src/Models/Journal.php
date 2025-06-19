@@ -12,19 +12,40 @@ use Money\Money;
 use Money\Currency;
 use Carbon\Carbon;
 
-/**
- * @property    Money $balance
- * @property    string $currency
- * @property    Carbon $updated_at
- * @property    Carbon $post_date
- * @property    Carbon $created_at
- */
 class Journal extends Model
 {
-    /**
-     * @var string
-     */
     protected $table = 'accounting_journals';
+
+    protected $dates = [
+        'deleted_at',
+        'updated_at'
+    ];
+
+    protected $fillable = [
+        'ledger_id',
+        'balance',
+        'currency',
+        'morphed_type',
+        'morphed_id',
+    ];
+
+    protected $casts = [
+        'balance' => 'int',
+        'morphed_id' => 'int',
+    ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (self $journal): void {
+            $journal->balance = 0;
+        });
+
+        static::created(function (self $journal): void {
+            $journal->resetCurrentBalances();
+        });
+    }
 
     public function morphed(): MorphTo
     {
@@ -34,24 +55,6 @@ class Journal extends Model
     public function ledger(): BelongsTo
     {
         return $this->belongsTo(Ledger::class);
-    }
-
-    /**
-     * @var array
-     */
-    protected $dates = [
-        'deleted_at',
-        'updated_at'
-    ];
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::created(function (Journal $journal) {
-            $journal->resetCurrentBalances();
-        });
-
-        parent::boot();
     }
 
     public function setCurrency(string $currency): void
@@ -71,184 +74,169 @@ class Journal extends Model
 
     public function resetCurrentBalances(): Money
     {
-        $this->balance = $this->getBalance();
-        $this->save();
+        // Only reset if currency is set
+        if (empty($this->currency)) {
+            $this->attributes['balance'] = 0;
+            return new Money(0, new Currency('USD')); // Default currency
+        }
+
+        // Recalculate balance from transactions if any exist
+        if ($this->transactions()->exists()) {
+            $this->balance = $this->getBalance();
+            $this->save();
+        } else {
+            // Otherwise, ensure balance is zero
+            $this->balance = new Money(0, new Currency($this->currency));
+            $this->save();
+        }
+
         return $this->balance;
     }
 
-    /**
-     * @param Money|float $value
-     */
-    protected function getBalanceAttribute($value): Money
+    protected function getBalanceAttribute(mixed $value): Money
     {
-        return new Money($value, new Currency($this->currency));
+        return new Money((int) $value, new Currency($this->currency));
     }
 
-    /**
-     * @param Money|float $value
-     */
-    protected function setBalanceAttribute($value): void
+    protected function setBalanceAttribute(mixed $value): void
     {
-        $value = is_a($value, Money::class)
-            ? $value
-            : new Money($value, new Currency($this->currency));
-        $this->attributes['balance'] = $value ? (int)$value->getAmount() : null;
+        // If value is a Money object, extract amount and currency
+        if ($value instanceof Money) {
+            $this->attributes['balance'] = (int) $value->getAmount();
+            $this->currency = $value->getCurrency()->getCode();
+            return;
+        }
+
+        // If currency is not set, set a default
+        if (empty($this->currency)) {
+            $this->currency = 'USD'; // Default currency
+        }
+
+        // Handle both string and numeric values
+        $amount = is_numeric($value) ? (int) $value : 0;
+        $money = new Money($amount, new Currency($this->currency));
+
+        $this->attributes['balance'] = (int) $money->getAmount();
     }
 
-    /**
-     * Get the debit only balance of the journal based on a given date.
-     */
     public function getDebitBalanceOn(Carbon $date): Money
     {
-        $balance = $this->transactions()->where('post_date', '<=', $date)->sum('debit') ?: 0;
-        return new Money($balance, new Currency($this->currency));
+        $balance = $this->transactions()
+            ->where('post_date', '<=', $date)
+            ->sum('debit') ?: 0;
 
+        return new Money($balance, new Currency($this->currency));
     }
 
     public function transactionsReferencingObjectQuery(Model $object): HasMany
     {
-        return $this
-            ->transactions()
-            ->where('ref_class', get_class($object))
+        return $this->transactions()
+            ->where('ref_class', $object::class)
             ->where('ref_class_id', $object->id);
     }
 
-    /**
-     * Get the credit only balance of the journal based on a given date.
-     */
     public function getCreditBalanceOn(Carbon $date): Money
     {
-        $balance = $this->transactions()->where('post_date', '<=', $date)->sum('credit') ?: 0;
+        $balance = $this->transactions()
+            ->where('post_date', '<=', $date)
+            ->sum('credit') ?: 0;
+
         return new Money($balance, new Currency($this->currency));
     }
 
-    /**
-     * Get the balance of the journal based on a given date.
-     */
     public function getBalanceOn(Carbon $date): Money
     {
-        return $this->getCreditBalanceOn($date)->subtract($this->getDebitBalanceOn($date));
+        return $this->getDebitBalanceOn($date)
+            ->subtract($this->getCreditBalanceOn($date));
     }
 
-    /**
-     * Get the balance of the journal as of right now, excluding future transactions.
-     */
     public function getCurrentBalance(): Money
     {
         return $this->getBalanceOn(Carbon::now());
     }
 
-    /**
-     * Get the balance of the journal.  This "could" include future dates.
-     */
     public function getBalance(): Money
     {
-        if ($this->transactions()->count() > 0) {
-            $balance = $this->transactions()->sum('credit') - $this->transactions()->sum('debit');
-        } else {
-            $balance = 0;
+        if (!$this->transactions()->exists()) {
+            return new Money(0, new Currency($this->currency));
         }
+
+        $debitTotal = $this->transactions()->sum('debit');
+        $creditTotal = $this->transactions()->sum('credit');
+
+        // Standard accounting: balance = debits - credits
+        // This matches the test expectations where debits are positive and credits are negative
+        $balance = $debitTotal - $creditTotal;
 
         return new Money($balance, new Currency($this->currency));
     }
 
-    /**
-     * Get the balance of the journal in dollars.  This "could" include future dates.
-     * @return float|int
-     */
-    public function getCurrentBalanceInDollars()
+    public function getCurrentBalanceInDollars(): float
     {
         return $this->getCurrentBalance()->getAmount() / 100;
     }
 
-    /**
-     * Get balance
-     * @return float|int
-     */
-    public function getBalanceInDollars()
+    public function getBalanceInDollars(): float
     {
-        return $this->getBalance()->getAmount() / 100;
+        $amount = $this->getBalance()->getAmount();
+        return round($amount / 100, 2);
     }
 
     public function credit(
-        $value,
-        string $memo = null,
-        Carbon $post_date = null,
-        string $transaction_group = null
+        mixed $value,
+        ?string $memo = null,
+        ?Carbon $postDate = null,
+        ?string $transactionGroup = null
     ): JournalTransaction {
-        $value = is_a($value, Money::class)
+        $value = $value instanceof Money
             ? $value
             : new Money($value, new Currency($this->currency));
-        return $this->post($value, null, $memo, $post_date, $transaction_group);
+
+        return $this->post($value, null, $memo, $postDate, $transactionGroup);
     }
 
     public function debit(
-        $value,
-        string $memo = null,
-        Carbon $post_date = null,
-        $transaction_group = null
+        mixed $value,
+        ?string $memo = null,
+        ?Carbon $postDate = null,
+        ?string $transactionGroup = null
     ): JournalTransaction {
-        $value = is_a($value, Money::class)
+        $value = $value instanceof Money
             ? $value
             : new Money($value, new Currency($this->currency));
-        return $this->post(null, $value, $memo, $post_date, $transaction_group);
+
+        return $this->post(null, $value, $memo, $postDate, $transactionGroup);
     }
 
-    /**
-     * Credit a journal by a given dollar amount
-     * @param Money|float $value
-     * @param string  $memo
-     * @param Carbon $post_date
-     * @return JournalTransaction
-     */
-    public function creditDollars($value, string $memo = null, Carbon $post_date = null): JournalTransaction
-    {
-        $value = (int)($value * 100);
-        return $this->credit($value, $memo, $post_date);
+    public function creditDollars(
+        float $value,
+        ?string $memo = null,
+        ?Carbon $postDate = null
+    ): JournalTransaction {
+        return $this->credit((int) ($value * 100), $memo, $postDate);
     }
 
-    /**
-     * Debit a journal by a given dollar amount
-     * @param Money|float $value
-     * @param string $memo
-     * @param Carbon $post_date
-     * @return JournalTransaction
-     */
-    public function debitDollars($value, string $memo = null, Carbon $post_date = null): JournalTransaction
-    {
-        $value = (int)($value * 100);
-        return $this->debit($value, $memo, $post_date);
+    public function debitDollars(
+        float $value,
+        ?string $memo = null,
+        ?Carbon $postDate = null
+    ): JournalTransaction {
+        return $this->debit((int) ($value * 100), $memo, $postDate);
     }
 
-    /**
-     * Calculate the dollar amount debited to a journal today
-     * @return float|int
-     */
-    public function getDollarsDebitedToday()
+    public function getDollarsDebitedToday(): float
     {
-        $today = Carbon::now();
-        return $this->getDollarsDebitedOn($today);
+        return $this->getDollarsDebitedOn(Carbon::now());
     }
 
-    /**
-     * Calculate the dollar amount credited to a journal today
-     * @return float|int
-     */
-    public function getDollarsCreditedToday()
+    public function getDollarsCreditedToday(): float
     {
-        $today = Carbon::now();
-        return $this->getDollarsCreditedOn($today);
+        return $this->getDollarsCreditedOn(Carbon::now());
     }
 
-    /**
-     * Calculate the dollar amount debited to a journal on a given day
-     * @param Carbon $date
-     * @return float|int
-     */
-    public function getDollarsDebitedOn(Carbon $date)
+    public function getDollarsDebitedOn(Carbon $date): float
     {
-        return $this
-                ->transactions()
+        return $this->transactions()
                 ->whereBetween('post_date', [
                     $date->copy()->startOfDay(),
                     $date->copy()->endOfDay()
@@ -256,15 +244,9 @@ class Journal extends Model
                 ->sum('debit') / 100;
     }
 
-    /**
-     * Calculate the dollar amount credited to a journal on a given day
-     * @param Carbon $date
-     * @return float|int
-     */
-    public function getDollarsCreditedOn(Carbon $date)
+    public function getDollarsCreditedOn(Carbon $date): float
     {
-        return $this
-                ->transactions()
+        return $this->transactions()
                 ->whereBetween('post_date', [
                     $date->copy()->startOfDay(),
                     $date->copy()->endOfDay()
@@ -273,23 +255,29 @@ class Journal extends Model
     }
 
     private function post(
-        Money $credit = null,
-        Money $debit = null,
-        string $memo = null,
-        Carbon $post_date = null,
-        string $transaction_group = null
+        ?Money $credit = null,
+        ?Money $debit = null,
+        ?string $memo = null,
+        ?Carbon $postDate = null,
+        ?string $transactionGroup = null
     ): JournalTransaction {
-        $transaction = new JournalTransaction;
-        $transaction->credit = $credit ? $credit->getAmount() : null;
-        $transaction->debit = $debit ? $debit->getAmount() : null;
-        $currency_code = $credit
-            ? $credit->getCurrency()->getCode()
-            : $debit->getCurrency()->getCode();
-        $transaction->memo = $memo;
-        $transaction->currency = $currency_code;
-        $transaction->post_date = $post_date ?: Carbon::now();
-        $transaction->transaction_group = $transaction_group;
-        $this->transactions()->save($transaction);
+        $currencyCode = ($credit ?? $debit)->getCurrency()->getCode();
+
+        // Create the transaction
+        $transaction = $this->transactions()->create([
+            'credit' => $credit?->getAmount(),
+            'debit' => $debit?->getAmount(),
+            'memo' => $memo,
+            'currency' => $currencyCode,
+            'post_date' => $postDate ?? Carbon::now(),
+            'transaction_group' => $transactionGroup,
+        ]);
+
+        // Update the journal's balance
+        $this->refresh();
+        $this->balance = $this->getCurrentBalance();
+        $this->save();
+
         return $transaction;
     }
 }

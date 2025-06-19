@@ -9,47 +9,57 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Money\Money;
 use Money\Currency;
-use Carbon\Carbon;
+use Scottlaurent\Accounting\Enums\LedgerType;
 
-/**
- * @property    Money $balance
- * @property    Carbon $updated_at
- * @property    Carbon $post_date
- * @property    Carbon $created_at
- */
 class Ledger extends Model
 {
-    /**
-     * @var string
-     */
     protected $table = 'accounting_ledgers';
-
+    
+    protected $fillable = [
+        'name',
+        'type',
+    ];
+    
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'type' => LedgerType::class,
+    ];
+    
     public function journals(): HasMany
     {
         return $this->hasMany(Journal::class);
     }
-
-    /**
-     * Get all of the posts for the country.
-     */
-    public function journal_transactions(): HasManyThrough
+    
+    public function journalTransactions(): HasManyThrough
     {
         return $this->hasManyThrough(JournalTransaction::class, Journal::class);
     }
-
+    
     public function getCurrentBalance(string $currency): Money
     {
-        if ($this->type == 'asset' || $this->type == 'expense') {
-            $balance = $this->journal_transactions->sum('debit') - $this->journal_transactions->sum('credit');
-        } else {
-            $balance = $this->journal_transactions->sum('credit') - $this->journal_transactions->sum('debit');
-        }
-
+        $balance = match ($this->type) {
+            LedgerType::ASSET, 
+            LedgerType::EXPENSE,
+            LedgerType::LOSS => 
+                $this->journalTransactions->sum('debit') - $this->journalTransactions->sum('credit'),
+            default => // LIABILITY, EQUITY, REVENUE, GAIN
+                $this->journalTransactions->sum('credit') - $this->journalTransactions->sum('debit'),
+        };
+        
         return new Money($balance, new Currency($currency));
     }
-
+    
     public function getCurrentBalanceInDollars(): float
     {
         return $this->getCurrentBalance('USD')->getAmount() / 100;
+    }
+    
+    public static function getTypeOptions(): array
+    {
+        return array_combine(
+            array_column(LedgerType::cases(), 'value'),
+            array_map(fn($case) => ucfirst($case->value), LedgerType::cases())
+        );
     }
 }
