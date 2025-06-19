@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: accounting-app
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/database/database.sqlite
+    ports:
+      - "8000:8000"
+    networks:
+      - accounting-network
+    tty: true
+
+  # Database for testing and development
+  mysql:
+    image: mysql:8.0
+    container_name: accounting-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: accounting
+      MYSQL_USER: sail
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - accounting-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  accounting-network:
+    driver: bridge

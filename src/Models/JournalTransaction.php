@@ -5,118 +5,78 @@ declare(strict_types=1);
 namespace Scottlaurent\Accounting\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
-/**
- * Class JournalTransaction
- *
- * @package Scottlaurent\Accounting
- * @property    string $journal_id
- * @property    int $debit
- * @property    int $credit
- * @property    string $currency
- * @property    string memo
- * @property    \Carbon\Carbon $post_date
- * @property    \Carbon\Carbon $updated_at
- * @property    \Carbon\Carbon $created_at
- */
 class JournalTransaction extends Model
 {
-
-    /**
-     * @var string
-     */
     protected $table = 'accounting_journal_transactions';
-
-    /**
-     * Currency.
-     *
-     * @var string $currency
-     */
-    protected $currency;
-
-    /**
-     * @var bool
-     */
+    
     public $incrementing = false;
-
-    /**
-     * @var array
-     */
-    protected $guarded=['id'];
-
-    /**
-     * @var array
-     */
+    
+    protected $guarded = ['id'];
+    
     protected $casts = [
         'post_date' => 'datetime',
         'tags' => 'array',
+        'debit' => 'int',
+        'credit' => 'int',
+        'ref_class_id' => 'int',
     ];
-
-    /**
-     * Boot.
-     */
-    protected static function boot()
+    
+    protected $fillable = [
+        'journal_id',
+        'debit',
+        'credit',
+        'currency',
+        'memo',
+        'post_date',
+        'tags',
+        'ref_class',
+        'ref_class_id',
+        'transaction_group',
+    ];
+    
+    protected static function boot(): void
     {
         parent::boot();
-        static::creating(function ($transaction) {
-            $transaction->id = \Ramsey\Uuid\Uuid::uuid4()->toString();
+        
+        static::creating(function (self $transaction): void {
+            $transaction->id = Str::uuid()->toString();
         });
-
-//        static::saved(function ($transaction) {
-//            $transaction->journal->resetCurrentBalances();
-//        });
-
-        static::deleted(function ($transaction) {
-            $transaction->journal->resetCurrentBalances();
+        
+        static::deleted(function (self $transaction): void {
+            $transaction->journal?->resetCurrentBalances();
         });
-
-        parent::boot();
     }
-
-    /**
-     * Journal relation.
-     */
-    public function journal()
+    
+    public function journal(): BelongsTo
     {
         return $this->belongsTo(Journal::class);
     }
-
-    /**
-     * Set reference object.
-     *
-     * @param Model $object
-     * @return JournalTransaction
-     */
-    public function referencesObject($object)
+    
+    public function referencesObject(Model $object): self
     {
-        $this->ref_class    = get_class($object);
-        $this->ref_class_id = $object->id;
-        $this->save();
+        $this->update([
+            'ref_class' => $object::class,
+            'ref_class_id' => $object->id,
+        ]);
+        
         return $this;
     }
-
-    /**
-     * Get reference object.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection|Model|Model[]|null
-     */
-    public function getReferencedObject()
+    
+    public function getReferencedObject(): ?Model
     {
-        /**
-         * @var Model $_class
-         */
-        $_class = new $this->ref_class;
-        return $_class->find($this->ref_class_id);
+        if (! $this->ref_class) {
+            return null;
+        }
+        
+        $class = new $this->ref_class;
+        return $class->find($this->ref_class_id);
     }
-
-    /**
-     * Set currency.
-     *
-     * @param string $currency
-     */
-    public function setCurrency($currency)
+    
+    public function setCurrency(string $currency): void
     {
         $this->currency = $currency;
     }
-
 }
