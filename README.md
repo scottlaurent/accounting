@@ -55,13 +55,53 @@ I am an accountant and a Laravel developer.  I wrote this package to provide a s
 
 ## Installation
 
-1) run composer require "scottlaurent/accounting"
+### 1. Install via Composer
 
-2) run php artisan vendor:publish  This will install 3 new tables in your database.  The ledger migration is optional and you should look at SCENARIO C below to determine if you will even use this.
+```bash
+composer require scottlaurent/accounting
+```
 
-3) add the trait to any model you want to keep a journal for.
+The service provider will be **automatically discovered** by Laravel (5.5+). No manual registration required!
 
-4) ** most of the time you will want to add the $model->initJournal() into the static::created() method of your model so that a journal is created when you create the model object itself.
+### 2. Publish Migrations
+
+```bash
+php artisan vendor:publish --provider="Scottlaurent\Accounting\Providers\AccountingServiceProvider"
+```
+
+This will install 3 new tables in your database:
+- `accounting_ledgers` - For organizing accounts by type (optional)
+- `accounting_journals` - For tracking balances per model
+- `accounting_journal_transactions` - For individual transaction records
+
+### 3. Run Migrations
+
+```bash
+php artisan migrate
+```
+
+### 4. Add the Trait to Your Models
+
+Add the `AccountingJournal` trait to any model you want to track balances for:
+
+```php
+use Scottlaurent\Accounting\ModelTraits\AccountingJournal;
+
+class User extends Model
+{
+    use AccountingJournal;
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Automatically create a journal when a user is created
+        static::created(function ($user) {
+            $user->initJournal();
+        });
+    }
+}
+```
 
 
 ## Sign Convention
